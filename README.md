@@ -91,3 +91,10 @@ El dashboard permite editar reservas pendientes. PostgreSQL aplica la restricci�
 El formulario solicita autorización para enviar a Gemini instrucciones de corrección. Las transcripciones de nombre, documento y correo se rellenan mediante el reconocimiento del navegador. La confirmación para guardar requiere una acción explícita del huésped.
 
 Fotografías de ejemplo: [Lisa Anna](https://www.pexels.com/photo/bed-in-a-hotel-room-19889107/), [Roshan Patel](https://www.pexels.com/photo/hotel-room-with-a-bed-20653866/) y [Alexandru Cojanu](https://www.pexels.com/photo/a-bed-in-a-hotel-room-19425327/).
+
+## Privacidad, verificación y APIs
+
+- [Aviso de privacidad](https://amadorjara-alt.github.io/HotelERP/privacidad.html) describe los datos, el uso de micrófono y las opciones de contacto.
+- [Ayuda e integraciones](https://amadorjara-alt.github.io/HotelERP/integraciones.html) incluye un conversor referencial PEN/USD/EUR con la API de Frankfurter. La conversión se calcula en el navegador y la liquidación se mantiene en PEN.
+- `account_details` separa nombre, edad, sexo y DNI de los perfiles operativos. RLS limita la lectura al titular. La función de registro guarda la ficha y asigna el perfil en una sola transacción.
+- Para habilitar Google, crea un cliente OAuth web en Google Auth Platform. Usa `https://amadorjara-alt.github.io` como origen autorizado y `https://ynnulzfgsfkojvgbhgua.supabase.co/auth/v1/callback` como callback. Coloca el ID y secreto del cliente directamente en el proveedor Google del proyecto Supabase. Los retornos del portal cliente y del acceso del personal están en la lista de redirecciones autorizadas.
