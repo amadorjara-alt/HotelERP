@@ -98,3 +98,10 @@ Fotografías de ejemplo: [Lisa Anna](https://www.pexels.com/photo/bed-in-a-hotel
 - [Ayuda e integraciones](https://amadorjara-alt.github.io/HotelERP/integraciones.html) incluye un conversor referencial PEN/USD/EUR con la API de Frankfurter. La conversión se calcula en el navegador y la liquidación se mantiene en PEN.
 - `account_details` separa nombre, edad, sexo y DNI de los perfiles operativos. RLS limita la lectura al titular. La función de registro guarda la ficha y asigna el perfil en una sola transacción.
 - Para habilitar Google, crea un cliente OAuth web en Google Auth Platform. Usa `https://amadorjara-alt.github.io` como origen autorizado y `https://ynnulzfgsfkojvgbhgua.supabase.co/auth/v1/callback` como callback. Coloca el ID y secreto del cliente directamente en el proveedor Google del proyecto Supabase. Los retornos del portal cliente y del acceso del personal están en la lista de redirecciones autorizadas.
+
+### Pagos de prueba con tarjeta y PayPal
+
+[Pagos de prueba](https://amadorjara-alt.github.io/HotelERP/pagos.html) muestra únicamente estadías cerradas del cliente autenticado.
+La Edge Function `sandbox-checkout` comprueba la propiedad y lee el importe de Supabase. Stripe Checkout usa PEN. PayPal Sandbox usa USD con cotización de referencia mostrada antes de continuar.
+Para probar, configura `STRIPE_TEST_SECRET_KEY` o `PAYPAL_SANDBOX_CLIENT_ID` y `PAYPAL_SANDBOX_CLIENT_SECRET` en Supabase, y usa cuentas o medios de pago de prueba. El botón **Verificar pago de prueba** consulta al proveedor y solo registra la confirmación si coinciden el identificador, la moneda y el importe. El sistema usa un flujo por estadía para evitar duplicados.
+El modo de prueba requiere una cuenta de comercio válida para configurar cada proveedor. Para producción, revisa elegibilidad, conciliación por webhooks, reintentos, devoluciones y requisitos del comercio.
