@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HotelERP · Recepción</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Instrument+Serif&amp;display=swap" rel="stylesheet"><meta name="theme-color" content="#fbfaf7"><link rel="stylesheet" href="./styles.css?v=5"></head><body><header><strong class="brand"><span class="mark"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-5h6v5M9 9h.01m6 0h.01M9 12h.01m6 0h.01"/></svg></span><span>Hotel<em>ERP</em></span></strong><button id="logout" class="secondary" hidden>Cerrar sesión</button></header>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Instrument+Serif&amp;display=swap" rel="stylesheet"><meta name="theme-color" content="#fbfaf7"><link rel="stylesheet" href="./styles.css?v=5"></head><body><header><strong class="brand"><span class="mark"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-5h6v5M9 9h.01m6 0h.01M9 12h.01m6 0h.01"/></svg></span><span>Hotel<em>ERP</em></span></strong><div class="controls"><a class="header-privacy" href="./privacidad.html">Privacidad</a><a class="header-privacy" href="./integraciones.html">Ayuda e integraciones</a><button id="logout" class="secondary" hidden>Cerrar sesión</button></div></header>
 <main>
 <div id="landing">
   <nav class="public-nav" aria-label="Navegación principal"><a href="./">Inicio</a><a href="#nosotros">Nosotros</a><a href="#habitaciones">Habitaciones</a><a href="#servicios-publicos">Servicios</a><a href="#contacto">Contacto</a><a class="cta" href="?acceso=seleccionar">Ingresar</a></nav>
@@ -14,7 +14,7 @@
   <section id="habitaciones" class="public-block"><p class="overline">Alojamiento</p><h2>Habitaciones y tarifas</h2><p>Consulta el precio por noche en soles y revisa la disponibilidad para tus fechas.</p><div id="landingRooms" class="room-cards" aria-live="polite"><p>Cargando habitaciones…</p></div></section>
   <section class="public-section" id="servicios-publicos"><div><p class="overline">Durante la estadía</p><h2>Servicios y atención</h2></div><ul class="benefits"><li>Consulta de disponibilidad y reservas con confirmación.</li><li>Servicios como desayuno y lavandería según el catálogo del hotel.</li><li>Resumen de alojamiento y consumos en soles peruanos.</li></ul></section>
   <section class="access-banner" aria-labelledby="accessibleTitle"><div><p class="overline">Accesibilidad</p><h2 id="accessibleTitle">Registro asistido por voz</h2><p>Dicta tus datos en español, escucha el resumen y corrige cada campo antes de confirmar. También puedes completar el registro con teclado y lector de pantalla.</p></div><a class="cta gold" href="?acceso=cliente">Ir al portal del cliente</a></section>
-  <footer id="contacto"><div><strong>HotelERP</strong><p>Proyecto académico · Universidad Peruana Cayetano Heredia · Perú</p></div><div><strong>Contacto</strong><p>Para consultas sobre tu estadía, comunícate con la recepción del hotel.</p></div><div><a href="#habitaciones">Habitaciones</a><br><button id="privacyOpen" type="button" class="text-button">Aviso de privacidad</button><br><a href="https://github.com/amadorjara-alt/HotelERP">Proyecto en GitHub</a></div></footer>
+  <footer id="contacto"><div><strong>HotelERP</strong><p>Proyecto académico · Universidad Peruana Cayetano Heredia · Perú</p></div><div><strong>Contacto</strong><p>Para consultas sobre tu estadía, comunícate con la recepción del hotel.</p></div><div><a href="#habitaciones">Habitaciones</a><br><button id="privacyOpen" type="button" class="text-button">Aviso de privacidad</button><br><a href="./integraciones.html">Ayuda y conversor de moneda</a><br><a href="https://github.com/amadorjara-alt/HotelERP">Proyecto en GitHub</a></div></footer>
 </div>
 <section id="chooseAccess" class="choice-view" hidden aria-labelledby="chooseTitle">
   <a href="./">Volver al inicio</a><h1 id="chooseTitle">Bienvenido, ¿cómo deseas ingresar?</h1>
@@ -26,7 +26,7 @@
 <dialog id="roomDialog" aria-labelledby="roomDialogTitle">
   <h2 id="roomDialogTitle">Detalles de la habitación</h2><p id="roomDialogDetails"></p><div class="controls"><a id="roomDialogBook" class="cta" href="?acceso=cliente">Consultar disponibilidad</a><form method="dialog"><button type="submit" class="secondary">Cerrar</button></form></div>
 </dialog>
-<dialog id="privacyDialog" aria-labelledby="privacyTitle"><h2 id="privacyTitle">Aviso de privacidad</h2><p>Supabase guarda los datos de cuenta y de estadía. Solo la cuenta del cliente y el personal autorizado pueden acceder a los registros que les corresponden. El dictado depende del servicio de reconocimiento del navegador. El envío opcional de instrucciones a la API de IA requiere activarlo explícitamente.</p><form method="dialog"><button type="submit">Cerrar</button></form></dialog>
+<dialog id="privacyDialog" aria-labelledby="privacyTitle"><h2 id="privacyTitle">Aviso de privacidad</h2><p>Supabase guarda los datos de cuenta y de estadía. Solo la cuenta del cliente y el personal autorizado pueden acceder a los registros que les corresponden. El dictado depende del servicio de reconocimiento del navegador. El envío opcional de instrucciones a la API de IA requiere activarlo explícitamente.</p><p><a href="./privacidad.html">Leer el aviso de privacidad completo</a></p><form method="dialog"><button type="submit">Cerrar</button></form></dialog>
 <p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
 <div id="login" hidden>
   <aside class="auth-visual" aria-label="Recepción hotelera">
@@ -54,7 +54,7 @@
       <button id="showRegister" type="button" class="secondary">Crear cuenta</button><button id="resetPassword" type="button" class="text-button">Olvidé mi contraseña</button>
     </form>
     <form id="registerForm" hidden aria-labelledby="registerTitle">
-      <h2 id="registerTitle">Crear cuenta</h2>
+      <h2 id="registerTitle">Crear cuenta</h2><p>Confirma tu correo para continuar. Después completarás tus datos personales.</p><a href="./privacidad.html">Cómo protegemos tus datos</a>
       <label>Correo electrónico<input name="email" type="email" autocomplete="email" required></label>
       <label>Contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
       <button type="submit">Registrarme</button>
@@ -64,12 +64,17 @@
 </div>
 <section id="recoveryPanel" class="account-panel" hidden><h1>Cambiar contraseña</h1><form id="recoveryForm"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="8" required></label><button type="submit">Guardar contraseña</button></form></section>
 <section id="onboarding" class="account-panel" hidden aria-labelledby="onboardingTitle">
-  <h1 id="onboardingTitle">Completa tu registro</h1>
+  <h1 id="onboardingTitle">Completa tu registro</h1><p>Ingresa tus datos tal como figuran en tu documento. Consulta el <a href="./privacidad.html">aviso de privacidad</a>.</p>
   <form id="onboardingForm">
     <label>Tipo de perfil<select name="kind" required>
       <option value="customer">Cliente</option><option value="admin">Administrador · Crear un hotel</option><option value="staff">Personal · Unirme con invitación</option>
     </select></label>
-    <label id="displayNameLabel"><span id="displayNameText">Nombre completo</span><input name="display_name" minlength="2" maxlength="120"></label>
+    <label>Nombre completo<input name="full_name" autocomplete="name" minlength="2" maxlength="120" required></label>
+    <label>Edad<input name="age" type="number" min="18" max="120" step="1" required></label>
+    <label>Sexo<select name="gender" required><option value="">Seleccionar</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="prefiero_no_decirlo">Prefiero no decirlo</option></select></label>
+    <label>DNI<input name="dni" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="off" aria-describedby="dni-help" required><small id="dni-help">8 dígitos. Solo se guarda en tu ficha privada.</small></label>
+    <label>Correo de tu cuenta<input name="verified_email" type="email" readonly></label>
+    <label id="displayNameLabel" hidden>Nombre del hotel<input name="display_name" minlength="2" maxlength="100"></label>
     <label id="inviteLabel" hidden>Código de invitación<input name="invite_code" autocomplete="off" pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"></label>
     <button type="submit">Guardar perfil</button>
   </form>
@@ -85,7 +90,7 @@
     <div class="controls full"><button type="button" class="secondary" id="customerVoice">Registrarme con asistente de voz</button><button type="button" class="secondary" id="customerRead">Leer mis datos</button><button type="button" class="secondary" id="customerStop">Detener voz</button><button type="submit">Confirmar reserva</button></div>
   </form></section>
   <section class="panel" id="mis-reservas"><h2>Mis reservas</h2><p id="customerSignInHint">Inicia sesión como cliente para confirmar o consultar tus reservas. <a href="?acceso=cliente&amp;ingresar=1">Ir al acceso de clientes</a></p><div id="customerStays"></div></section>
-  <section class="panel" id="mi-perfil" hidden><h2>Mi perfil</h2><dl><dt>Nombre</dt><dd id="customerName"></dd><dt>Correo</dt><dd id="customerEmail"></dd></dl></section>
+  <section class="panel" id="mi-perfil" hidden><h2>Mi perfil</h2><dl><dt>Nombre</dt><dd id="customerName"></dd><dt>Correo</dt><dd id="customerEmail"></dd><dt id="ageTitle" hidden>Edad</dt><dd id="customerAge" hidden></dd><dt id="dniTitle" hidden>DNI</dt><dd id="customerDni" hidden></dd></dl></section>
 </section>
 <div id="workspace" hidden><div class="desk-head"><span class="mark"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18M5 17v-2a7 7 0 0 1 14 0v2M12 5v3M10.5 5h3M4 20h16"/></svg></span><div><h1>Panel de recepción</h1><p id="hotelName"></p></div></div><nav class="side-nav" aria-label="Módulos del personal"><a href="#dashboard"><span aria-hidden="true">▦</span>Panel principal</a><a href="#roomsPanel"><span aria-hidden="true">▣</span>Habitaciones</a><a href="#agenda"><span aria-hidden="true">▤</span>Calendario de ocupación</a><a href="#reserva"><span aria-hidden="true">◇</span>Reservas</a><a href="#guestsPanel"><span aria-hidden="true">♙</span>Huéspedes</a><a href="#registro"><span aria-hidden="true">◉</span>Registro accesible</a><a href="#servicesPanel"><span aria-hidden="true">♧</span>Servicios</a><a href="#cuenta"><span aria-hidden="true">▧</span>Liquidaciones</a><a href="#settingsPanel"><span aria-hidden="true">⚙</span>Configuración</a><button id="sideLogout" type="button" class="secondary">Cerrar sesión</button></nav><div class="desk-content">
 <section id="dashboard" aria-labelledby="dashTitle"><h2 id="dashTitle">Resumen de hoy</h2><div class="metric-grid" id="metrics"></div><div id="occupancyMetric"></div></section>
@@ -108,4 +113,4 @@
 <section id="servicesPanel"><h2>Servicios adicionales</h2><div id="serviceInventory" class="table"></div><p>Selecciona una reserva abierta en <a href="#cuenta">Liquidaciones</a> para añadir consumos.</p></section>
 <section id="cuenta"><h2><span class="module-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l3 2 3-2 3 2 3-2v18l-3-2-3 2-3-2-3 2V3zm3 6h6m-6 4h6"/></svg></span>Reservas y liquidación</h2><label>Reserva<select id="selectedReservation"></select></label><div id="reservationActions" hidden><p id="reservationStatus"></p><div class="controls" id="actions"></div><hr><form id="serviceForm"><label>Servicio<select name="service_id" required></select></label><label>Cantidad<input name="quantity" type="number" min="1" max="1000" value="1" required></label><button>Registrar consumo</button></form><div id="printBill"><h3>Detalle de estadía</h3><p id="stayDetails"></p><ul id="charges"></ul><div id="total"></div></div><button id="printAction" type="button" class="secondary">Imprimir liquidación</button></div></section></div></div>
 <dialog id="editDialog" aria-labelledby="editTitle"><h2 id="editTitle">Editar reserva</h2><form id="editReservation"><label>Habitación<select name="room_id" required></select></label><label>Huésped<select name="guest_id" required></select></label><label>Ingreso<input name="check_in" type="date" required></label><label>Salida<input name="check_out" type="date" required></label><p id="editStatus" role="alert"></p><div class="controls"><button type="submit">Guardar cambios</button><button type="button" class="secondary" id="closeEdit">Cancelar edición</button></div></form></dialog></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="./app.js?v=5"></script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="./app.js?v=6"></script></body></html>
