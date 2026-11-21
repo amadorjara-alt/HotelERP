@@ -245,77 +245,227 @@ firstDay.onchange=drawCalendar;
 reservationSelect.onchange=drawReservation;
 byId("refresh").onclick=handle(byId("refresh"),async()=>{await refresh();message("Datos actualizados.");});
 
-const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recognizer;
-let voiceVersion=0;
-function stopVoice(){
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognizer = null;
+let activeUtterance = null;
+let voiceVersion = 0;
+
+function stopVoice() {
   voiceVersion++;
-  recognizer?.abort();
-  recognizer=null;
+  const previousRecognizer = recognizer;
+  recognizer = null;
+  activeUtterance = null;
+  previousRecognizer?.abort();
   window.speechSynthesis?.cancel();
 }
-function speak(text,next){
-  if(!window.speechSynthesis){next?.();return;}
-  const utterance=new SpeechSynthesisUtterance(text);
-  utterance.lang="es-PE";
-  utterance.onend=next||null;
-  utterance.onerror=event=>{
-    if(!["canceled","interrupted"].includes(event.error)) message("La lectura en voz alta no está disponible.",true);
+
+function speak(text, next) {
+  if (!window.speechSynthesis) {
+    next?.();
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  activeUtterance = utterance;
+  utterance.lang = "es-PE";
+  utterance.onend = () => {
+    if (activeUtterance !== utterance) return;
+    activeUtterance = null;
+    next?.();
+  };
+  utterance.onerror = event => {
+    if (activeUtterance !== utterance) return;
+    activeUtterance = null;
+    if (!["canceled", "interrupted"].includes(event.error)) {
+      message("La lectura en voz alta no está disponible. Puedes escribir los datos.", true);
+    }
   };
   window.speechSynthesis.speak(utterance);
 }
-function listen(prompt,onResult,version){
-  if(version!==voiceVersion) return;
+
+function listen(prompt, onResult, version) {
+  if (version !== voiceVersion) return;
   message(prompt);
-  speak(prompt,()=>{
-    if(version!==voiceVersion) return;
-    const speech=new Recognition();
-    recognizer=speech;
-    speech.lang="es-PE";
-    speech.onresult=event=>{
-      if(version===voiceVersion) onResult(event.results[0][0].transcript.trim());
+  speak(prompt, () => {
+    if (version !== voiceVersion) return;
+    const speech = new Recognition();
+    recognizer = speech;
+    speech.lang = "es-PE";
+    speech.continuous = false;
+    speech.interimResults = false;
+    let transcript = "";
+    let recognitionError = "";
+
+    speech.onresult = event => {
+      if (version !== voiceVersion || recognizer !== speech) return;
+      const result = event.results[event.resultIndex];
+      if (result?.isFinal) transcript = result[0].transcript.trim();
     };
-    speech.onerror=event=>{
-      if(version===voiceVersion) message("No se pudo reconocer la voz ("+event.error+"). Puedes reintentar o escribir los datos.",true);
+    speech.onerror = event => {
+      if (version === voiceVersion && recognizer === speech) recognitionError = event.error;
     };
-    try{speech.start();}catch(error){message(explain(error),true);}
+    speech.onend = () => {
+      if (version !== voiceVersion || recognizer !== speech) return;
+      recognizer = null;
+      // Wait for the microphone session to close before advancing the dialogue.
+      if (transcript && !recognitionError) {
+        onResult(transcript);
+      } else {
+        const detail = recognitionError ? " (" + recognitionError + ")" : "";
+        message("No se pudo reconocer la voz" + detail + ". Puedes reintentar o escribir los datos.", true);
+      }
+    };
+    try {
+      speech.start();
+    } catch (error) {
+      recognizer = null;
+      message(explain(error), true);
+    }
   });
 }
-function readback(){
-  const fields=guestForm.elements;
-  return "Nombre: "+(fields.full_name.value||"pendiente")+". Documento: "+(fields.document_number.value||"pendiente")+". Correo: "+(fields.email.value||"sin correo")+".";
+
+function plainVoiceText(text) {
+  return text.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").trim();
 }
-let voiceEmailCaptured=false;function review(version){if(!voiceEmailCaptured){emailStep(version);return;}
-  listen(readback()+" Di confirmar, corregir nombre, corregir documento, corregir correo o detener.",answer=>{
-    const command=answer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.!?]/g,"").trim();
-    if(command==="confirmar"){guestForm.requestSubmit();return;}
-    if(command==="corregir nombre"){nameStep(version,true);return;}
-    if(command==="corregir documento"){documentStep(version);return;}if(command==="corregir correo"||command==="corregir correo electronico"){emailStep(version);return;}
-    if(command!=="detener") message("Comando no reconocido. Revisa los campos y usa Confirmar y guardar.",true);
-  },version);
+
+function voiceCommand(text) {
+  return plainVoiceText(text).replace(/[¿?¡!.,;:]/g, "").replace(/\s+/g, " ").trim();
 }
-function emailStep(version){listen("Indica tu correo electrónico. Puedes decir arroba y punto; si no deseas agregarlo, di sin correo.",answer=>{const spoken=answer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.!?]/g,"").trim();const field=guestForm.elements.email;if(["sin correo","omitir correo","no tengo correo","sin correo electronico"].includes(spoken)){field.value="";voiceEmailCaptured=true;review(version);return;}const normalized=answer.toLowerCase().replace(/\s*arroba\s*/g,"@").replace(/(^|\s)at(?=\s|$)/g,"$1@").replace(/\s*punto\s*/g,".").replace(/,/g,".").replace(/\s+/g,"");if(!normalized){message("No se escuchó un correo. Inténtalo otra vez o di sin correo.",true);emailStep(version);return;}field.value=normalized;if(field.validity.typeMismatch){message("No reconocí un correo válido. Inténtalo otra vez diciendo arroba y punto, o di sin correo.",true);emailStep(version);return;}voiceEmailCaptured=true;review(version);},version);}function documentStep(version){
-  listen("Indica el número de documento, dígito por dígito.",answer=>{
-    const digits={cero:"0",uno:"1",dos:"2",tres:"3",cuatro:"4",cinco:"5",seis:"6",siete:"7",ocho:"8",nueve:"9"};
-    const normalized=answer.toLowerCase().replace(/[.,]/g,"").split(/\s+/).map(word=>digits[word]??word).join("");
-    guestForm.elements.document_number.value=normalized;
+
+function normalizeSpokenEmail(text) {
+  const compact = plainVoiceText(text)
+    .replace(/[.,!?]+$/, "")
+    .replace(/\bguion[\s-]+bajo\b/g, "_")
+    .replace(/\bguion\b/g, "-")
+    .replace(/\b(?:arroba|at)\b/g, "@")
+    .replace(/\bpunto\b/g, ".")
+    .replace(/,/g, ".")
+    .replace(/\s+/g, "");
+  return compact.replace(/@(gmail|hotmail|outlook)$/, "@$1.com");
+}
+
+function normalizeSpokenDocument(text) {
+  const digits = {
+    cero: "0", uno: "1", dos: "2", tres: "3", cuatro: "4",
+    cinco: "5", seis: "6", siete: "7", ocho: "8", nueve: "9"
+  };
+  return plainVoiceText(text)
+    .replace(/\b(cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\b/g, word => digits[word])
+    .replace(/[\s.,!?\p{Dash_Punctuation}−]+/gu, "")
+    .toUpperCase();
+}
+
+const spokenFields = [
+  {
+    key: "full_name",
+    initial: "Por favor, indica tu nombre completo.",
+    correction: "Indique el nuevo nombre.",
+    retry: "No escuché un nombre válido. Indique su nombre completo.",
+    parse: answer => answer.trim(),
+    valid: value => /\p{L}/u.test(value)
+  },
+  {
+    key: "document_number",
+    initial: "Indica tu documento. Puedes decir los dígitos uno por uno.",
+    correction: "Indique el nuevo documento.",
+    retry: "No reconocí el documento. Indique nuevamente sus números o letras.",
+    parse: normalizeSpokenDocument,
+    valid: value => /^[A-Z0-9]+$/.test(value)
+  },
+  {
+    key: "email",
+    initial: "Indica tu correo electrónico. Puedes decir arroba y punto, o decir sin correo.",
+    correction: "Indique el nuevo correo electrónico. También puede decir sin correo.",
+    retry: "No reconocí un correo válido. Diga arroba y punto, o diga sin correo.",
+    parse: normalizeSpokenEmail,
+    valid: (value, field) => Boolean(value) && !field.validity.typeMismatch
+  }
+];
+
+function readback() {
+  const fields = guestForm.elements;
+  return "Nombre: " + (fields.full_name.value || "pendiente") +
+    ". Documento: " + (fields.document_number.value || "pendiente") +
+    ". Correo: " + (fields.email.value || "sin correo") + ".";
+}
+
+function captureVoiceField(step, prompt, next, version) {
+  const field = guestForm.elements[step.key];
+  listen(prompt, answer => {
+    const command = voiceCommand(answer);
+    if (command === "detener") {
+      stopVoice();
+      message("Registro por voz detenido.");
+      return;
+    }
+    if (step.key === "email" && ["sin correo", "omitir correo", "no tengo correo", "sin correo electronico"].includes(command)) {
+      field.value = "";
+      next();
+      return;
+    }
+    const value = step.parse(answer);
+    field.value = value;
+    if ((field.maxLength >= 0 && value.length > field.maxLength) || !step.valid(value, field)) {
+      field.value = "";
+      captureVoiceField(step, step.retry, next, version);
+      return;
+    }
+    next();
+  }, version);
+}
+
+function review(version, intro = "") {
+  const prompt = intro + readback() + " Di guardar, corregir nombre, corregir documento, corregir correo o detener.";
+  listen(prompt, answer => {
+    const command = voiceCommand(answer);
+    if (command === "guardar" || command === "confirmar") {
+      stopVoice();
+      guestForm.requestSubmit();
+      return;
+    }
+    if (command === "detener") {
+      stopVoice();
+      message("Registro por voz detenido.");
+      return;
+    }
+    const correction = ["corregir nombre", "corregir documento", "corregir correo"];
+    const index = correction.indexOf(command === "corregir correo electronico" ? "corregir correo" : command);
+    if (index === -1) {
+      review(version, "No reconocí el comando. ");
+      return;
+    }
+    const step = spokenFields[index];
+    guestForm.elements[step.key].value = "";
+    captureVoiceField(step, step.correction, () => review(version), version);
+  }, version);
+}
+
+function collectVoiceFields(index, version) {
+  if (index === spokenFields.length) {
     review(version);
-  },version);
+    return;
+  }
+  const step = spokenFields[index];
+  captureVoiceField(step, step.initial, () => collectVoiceFields(index + 1, version), version);
 }
-function nameStep(version,correction=false){
-  listen("Por favor, indica tu nombre completo.",answer=>{
-    guestForm.elements.full_name.value=answer;
-    if(correction) review(version);
-    else documentStep(version);
-  },version);
-}
-byId("voice").onclick=()=>{voiceEmailCaptured=false;
+
+byId("voice").onclick = () => {
   stopVoice();
-  if(!Recognition||!window.speechSynthesis){message("El registro por voz requiere un navegador compatible. Puedes usar teclado y lector de pantalla.",true);return;}
-  nameStep(voiceVersion);
+  if (!Recognition || !window.speechSynthesis) {
+    message("El registro por voz requiere un navegador compatible. Puedes usar teclado y lector de pantalla.", true);
+    return;
+  }
+  collectVoiceFields(0, voiceVersion);
 };
-byId("read").onclick=()=>{stopVoice();speak(readback());message(readback());};
-byId("stop").onclick=()=>{stopVoice();message("Registro por voz detenido.");};
+byId("read").onclick = () => {
+  stopVoice();
+  const summary = readback();
+  speak(summary);
+  message(summary);
+};
+byId("stop").onclick = () => {
+  stopVoice();
+  message("Registro por voz detenido.");
+};
 
 async function showSession(session,event,version=++sessionVersion){
   try{
