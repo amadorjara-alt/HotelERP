@@ -16,7 +16,7 @@ const redirectTo = new URL("./",location.href).href;
 let rooms=[], guests=[], reservations=[], services=[], totals=[], charges=[];
 let sessionVersion=0;
 function message(text,error=false){
-  byId("status").textContent=text;
+  const status=byId("status");status.textContent=text;status.setAttribute("role",error?"alert":"status");status.setAttribute("aria-live",error?"assertive":"polite");status.setAttribute("aria-atomic","true");
   byId("status").classList.toggle("error",error);
 }
 function check(result){
@@ -285,16 +285,16 @@ function readback(){
   const fields=guestForm.elements;
   return "Nombre: "+(fields.full_name.value||"pendiente")+". Documento: "+(fields.document_number.value||"pendiente")+". Correo: "+(fields.email.value||"sin correo")+".";
 }
-function review(version){
-  listen(readback()+" Di confirmar, corregir nombre, corregir documento o detener.",answer=>{
-    const command=answer.toLowerCase().replace(/[.!?]/g,"").trim();
+let voiceEmailCaptured=false;function review(version){if(!voiceEmailCaptured){emailStep(version);return;}
+  listen(readback()+" Di confirmar, corregir nombre, corregir documento, corregir correo o detener.",answer=>{
+    const command=answer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.!?]/g,"").trim();
     if(command==="confirmar"){guestForm.requestSubmit();return;}
     if(command==="corregir nombre"){nameStep(version,true);return;}
-    if(command==="corregir documento"){documentStep(version);return;}
+    if(command==="corregir documento"){documentStep(version);return;}if(command==="corregir correo"||command==="corregir correo electronico"){emailStep(version);return;}
     if(command!=="detener") message("Comando no reconocido. Revisa los campos y usa Confirmar y guardar.",true);
   },version);
 }
-function documentStep(version){
+function emailStep(version){listen("Indica tu correo electrónico. Puedes decir arroba y punto; si no deseas agregarlo, di sin correo.",answer=>{const spoken=answer.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.!?]/g,"").trim();const field=guestForm.elements.email;if(["sin correo","omitir correo","no tengo correo","sin correo electronico"].includes(spoken)){field.value="";voiceEmailCaptured=true;review(version);return;}const normalized=answer.toLowerCase().replace(/\s*arroba\s*/g,"@").replace(/(^|\s)at(?=\s|$)/g,"$1@").replace(/\s*punto\s*/g,".").replace(/,/g,".").replace(/\s+/g,"");if(!normalized){message("No se escuchó un correo. Inténtalo otra vez o di sin correo.",true);emailStep(version);return;}field.value=normalized;if(field.validity.typeMismatch){message("No reconocí un correo válido. Inténtalo otra vez diciendo arroba y punto, o di sin correo.",true);emailStep(version);return;}voiceEmailCaptured=true;review(version);},version);}function documentStep(version){
   listen("Indica el número de documento, dígito por dígito.",answer=>{
     const digits={cero:"0",uno:"1",dos:"2",tres:"3",cuatro:"4",cinco:"5",seis:"6",siete:"7",ocho:"8",nueve:"9"};
     const normalized=answer.toLowerCase().replace(/[.,]/g,"").split(/\s+/).map(word=>digits[word]??word).join("");
@@ -309,7 +309,7 @@ function nameStep(version,correction=false){
     else documentStep(version);
   },version);
 }
-byId("voice").onclick=()=>{
+byId("voice").onclick=()=>{voiceEmailCaptured=false;
   stopVoice();
   if(!Recognition||!window.speechSynthesis){message("El registro por voz requiere un navegador compatible. Puedes usar teclado y lector de pantalla.",true);return;}
   nameStep(voiceVersion);
