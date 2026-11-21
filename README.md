@@ -11,7 +11,7 @@ HotelERP es una aplicación académica para la operación diaria de recepción d
 
 ERP significa *Enterprise Resource Planning* o planificación de recursos empresariales. En HotelERP, un **mini-ERP** reúne operaciones que comparten los mismos datos: la habitación reservada cambia la disponibilidad del calendario, el huésped registrado queda asociado a la reserva y los consumos de esa reserva se suman a la liquidación.
 
-Está dirigido a hoteles pequeños y a sus equipos de recepción en Perú. Los administradores crean un hotel y preparan su catálogo. El personal gestiona la operación diaria. Los clientes pueden registrar y consultar su propio perfil.
+Está dirigido a hoteles pequeños y a sus equipos de recepción en Perú. Los administradores crean un hotel y preparan su catálogo. El personal gestiona la operación diaria. Los clientes pueden consultar disponibilidad, reservar y revisar sus propias estadías.
 
 ## Alcance
 
@@ -22,15 +22,15 @@ Está dirigido a hoteles pequeños y a sus equipos de recepción en Perú. Los a
 | Huéspedes | Capturar nombre y documento mediante teclado o dictado en español. La lectura en voz alta permite revisar, corregir y confirmar antes de guardar. |
 | Estancias y servicios | Registrar consumos y calcular alojamiento, servicios y total con las tarifas guardadas. |
 | Administración | Crear un hotel, agregar habitaciones y servicios y generar invitaciones para el personal. |
-| Portal de clientes | Crear una cuenta de cliente y consultar el nombre y correo propios. |
+| Portal de clientes | Explorar el catálogo, reservar con una cuenta de cliente y consultar sus propias estadías. |
 
-El alcance del portal de clientes se limita al perfil. El flujo de reservas y liquidaciones corresponde al personal del hotel.
+La liquidación y los consumos se gestionan en recepción. El cliente puede consultar los importes de sus propias estadías.
 
 ## Inicio de sesión y registro
 
 **Autenticación** verifica quién inicia sesión. La gestiona Supabase Auth. **Autorización** determina qué datos y acciones corresponden a cada cuenta. PostgreSQL la aplica mediante políticas de seguridad por fila (RLS).
 
-1. Elige **Trabajo en un hotel** o **Soy cliente** en la pantalla de acceso.
+1. Desde la portada, pulsa **Comenzar** y elige **Soy cliente** o **Soy personal del hotel**.
 2. Para una cuenta nueva, elige **Crear cuenta**, ingresa correo y contraseña y confirma el correo cuando Supabase lo solicite. El botón de Google usa OAuth y requiere activar el proveedor en Supabase.
 3. Completa el perfil. **Administrador** crea un hotel. **Personal** ingresa el código de un administrador. **Cliente** guarda su nombre y accede a su portal.
 4. Cada invitación permite unir una cuenta a un hotel. Se consume al usarla y caduca en 24 horas.
@@ -65,3 +65,29 @@ Para desarrollo, sirve la raíz del repositorio con un servidor HTTP local. Apli
 3. Reserva tres noches. Intenta crear otra reserva que se cruce para ver el error. Una reserva contigua puede comenzar el día de la salida.
 4. Agrega los dos consumos a la reserva original. La liquidación debe mostrar **S/ 450 + S/ 70 = S/ 520**.
 5. Crea un cliente e inicia sesión para comprobar que su portal muestra su propio perfil.
+
+## Portales y reservas por Internet
+
+La URL raíz abre la presentación pública. **Comenzar** lleva a la selección de cliente o personal. El modo cliente permite explorar el catálogo, consultar fechas y reservar con una cuenta de cliente. En **Configuración**, un administrador puede publicar el catálogo de su hotel. El hotel de demostración aparece publicado desde la migración. Las fotografías son ilustrativas y los precios se leen de Supabase.
+
+| Archivo nuevo | Responsabilidad |
+| --- | --- |
+| [hotel-ui.js](hotel-ui.js) | Tarjetas públicas, disponibilidad por fechas, portal de clientes, indicadores y tablas de recepción. |
+| [voice-assistant.js](voice-assistant.js) | STT y TTS en español, corrección de campos y confirmación. Comparte el flujo en recepción y en el portal. |
+| [process-voice](supabase/functions/process-voice/index.js) | Interpreta comandos opcionales con Gemini. Verifica la sesión y el perfil antes de invocar al proveedor. |
+| [Guía de diagramas y sustentación](HotelERP_Diagramas_y_Sustentacion.md) | Diagramas Mermaid, lógica empresarial y preguntas técnicas. |
+| [Datos de muestra](HotelERP_seed.sql) | Registros ficticios para una demostración controlada. |
+
+El dashboard permite editar reservas pendientes. PostgreSQL aplica la restricción de exclusión en inserciones y modificaciones, valida las transiciones de estado y bloquea consumos después del cierre. La liquidación se imprime desde su detalle.
+
+### Configurar Supabase y la IA
+
+1. Crea un proyecto, aplica los archivos de [migraciones](supabase/migrations) en orden y configura la URL y la clave publicable en `app.js`.
+2. En Auth, configura la URL del sitio y permite los retornos de cliente y personal, por ejemplo `https://amadorjara-alt.github.io/HotelERP/**`. Comprueba la entrega del correo de confirmación y recuperación. Habilita Google OAuth si deseas utilizar el botón de Google.
+3. Despliega `process-voice` con verificación JWT. En los secretos de Edge Functions guarda `GEMINI_API_KEY` y, si corresponde, `GEMINI_MODEL`. La clave privada se configura en Supabase. El registro manual y los comandos explícitos usan el formulario y Web Speech aunque no se configure Gemini.
+4. Sirve el directorio raíz con `python -m http.server 8000` y abre `http://localhost:8000/`. Para publicar, configura GitHub Pages desde la raíz de `main`.
+5. Crea un hotel de prueba, registra habitaciones y servicios, activa la publicación del catálogo y conserva el acceso de administrador. En otra sesión, accede como cliente y crea una reserva. Regresa al panel del hotel para comprobar su aparición, intentar un cruce, registrar consumos e imprimir la liquidación.
+
+El formulario solicita autorización para enviar a Gemini instrucciones de corrección. Las transcripciones de nombre, documento y correo se rellenan mediante el reconocimiento del navegador. La confirmación para guardar requiere una acción explícita del huésped.
+
+Fotografías de ejemplo: [Lisa Anna](https://www.pexels.com/photo/bed-in-a-hotel-room-19889107/), [Roshan Patel](https://www.pexels.com/photo/hotel-room-with-a-bed-20653866/) y [Alexandru Cojanu](https://www.pexels.com/photo/a-bed-in-a-hotel-room-19425327/).
