@@ -187,17 +187,18 @@ bind(byId("registerForm"),async credentials=>{
 });
 function updateOnboarding(){
   const kind=onboardingForm.elements.kind.value;
-  const staff=kind==="staff";
-  byId("inviteLabel").hidden=!staff;
-  byId("displayNameLabel").hidden=staff;
-  onboardingForm.elements.invite_code.required=staff;
-  onboardingForm.elements.display_name.required=!staff;
-  onboardingForm.elements.display_name.maxLength=kind==="admin"?100:120;
-  byId("displayNameText").textContent=kind==="admin"?"Nombre del hotel":"Nombre completo";
+  byId("inviteLabel").hidden=kind!=="staff";
+  byId("displayNameLabel").hidden=kind!=="admin";
+  onboardingForm.elements.invite_code.required=kind==="staff";
+  onboardingForm.elements.display_name.required=kind==="admin";
 }
 onboardingForm.elements.kind.onchange=updateOnboarding;
 bind(onboardingForm,async data=>{
-  check(await db.rpc("hotel_onboard",{kind:data.kind,display_name:data.kind==="staff"?null:data.display_name.trim(),invite_code:data.kind==="staff"?data.invite_code.trim():null}));
+  check(await db.rpc("hotel_finish_registration",{
+    kind:data.kind,full_name:data.full_name.trim(),age:Number(data.age),gender:data.gender,dni:data.dni.trim(),
+    hotel_name:data.kind==="admin"?data.display_name.trim():null,
+    invite_code:data.kind==="staff"?data.invite_code.trim():null
+  }));
   onboardingForm.reset();
   const session=check(await db.auth.getSession()).session;
   await showSession(session,"SIGNED_IN");
@@ -382,9 +383,10 @@ async function showSession(session,event,version=++sessionVersion){
       if(event==="SIGNED_OUT") message("Sesión cerrada.");
       return;
     }
-    const [profile,customer]=await Promise.all([
+    const [profile,customer,account]=await Promise.all([
       db.from("profiles").select("role,hotel_id,hotels(name,accepts_online_booking)").eq("id",session.user.id).maybeSingle(),
-      db.from("customers").select("full_name").eq("id",session.user.id).maybeSingle()
+      db.from("customers").select("full_name").eq("id",session.user.id).maybeSingle(),
+      db.from("account_details").select("age,dni").eq("id",session.user.id).maybeSingle()
     ]).then(results=>results.map(check));
     if(version!==sessionVersion) return;
     if(route==="personal"&&profile){
@@ -398,6 +400,9 @@ async function showSession(session,event,version=++sessionVersion){
     }else if(route==="cliente"&&customer){
       byId("customerName").textContent=customer.full_name;
       byId("customerEmail").textContent=session.user.email||"";
+      byId("customerAge").textContent=account?String(account.age):"";
+      byId("customerDni").textContent=account?"••••••"+account.dni.slice(-2):"";
+      for(const field of ["ageTitle","customerAge","dniTitle","customerDni"]) byId(field).hidden=!account;
       byId("customerArea").hidden=false;
       portal.show({...customer,email:session.user.email});
     }else if(profile||customer){
@@ -409,6 +414,7 @@ async function showSession(session,event,version=++sessionVersion){
       for(const option of kind.options) option.hidden=route==="cliente"?option.value!=="customer":option.value==="customer";
       kind.value=route==="cliente"?"customer":"staff";
       updateOnboarding();
+      onboardingForm.elements.verified_email.value=session.user.email||"";
       byId("onboarding").hidden=false;
       message("Completa tu perfil para continuar.");
       kind.focus();
