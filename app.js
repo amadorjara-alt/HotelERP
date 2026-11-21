@@ -16,7 +16,7 @@ const redirectTo = new URL("./",location.href).href;
 let rooms=[], guests=[], reservations=[], services=[], totals=[], charges=[];
 let sessionVersion=0;
 function message(text,error=false){
-  byId("status").textContent=text;
+  const status=byId("status");status.textContent=text;status.setAttribute("role",error?"alert":"status");status.setAttribute("aria-live",error?"assertive":"polite");status.setAttribute("aria-atomic","true");
   byId("status").classList.toggle("error",error);
 }
 function check(result){
