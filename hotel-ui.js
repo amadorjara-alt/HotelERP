@@ -135,6 +135,11 @@ export function createPublicPortal({db,byId,check,bind,message,currency,names,to
           make("p","Alojamiento "+currency.format(stay.lodging_total)+" · Servicios "+currency.format(stay.services_total)),
           make("strong","Total "+currency.format(stay.total)));
         article.append(details);
+        if(stay.status==="completed"&&Number(stay.total)>0){
+          const payment=make("a","Consultar pago de prueba");
+          payment.href="./pagos.html?reserva="+encodeURIComponent(stay.id);
+          article.append(payment);
+        }
       }
       container.append(article);
     }
