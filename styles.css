@@ -127,3 +127,74 @@ dialog::backdrop{background:#14263dae}dialog form>label{flex:1 1 180px}#editStat
 .change-access{display:inline-block;margin:0 0 15px;color:var(--green)}#login{min-height:560px}#login .auth-label{color:var(--green)}
 @media(max-width:740px){.public-section,footer{grid-template-columns:1fr}.public-nav{justify-content:start;gap:4px}.public-nav a{padding:6px;min-height:42px}.landing-hero{min-height:410px}.public-section,.public-block{margin:36px 0}.access-banner{align-items:start;flex-direction:column}#workspace:not([hidden]){display:block}#workspace>.desk-head{margin-bottom:12px}#workspace .side-nav{position:static;flex-direction:row;flex-wrap:wrap}.choice-view{padding-top:22px}}
 @media print{body.printing{background:white}body.printing *{visibility:hidden}body.printing #printBill,body.printing #printBill *{visibility:visible}body.printing #printBill{position:absolute;top:0;left:0;width:100%;color:#000;padding:15px}}
+
+/* Identidad visual de HotelERP */
+:root{--ink:#243746;--muted:#526471;--dark:#163143;--green:#214b60;--paper:#f8f7f3;--line:#e0e2de;--gold:#efd9ad;--field:#8798a2}
+body{font-size:16px}
+header{min-height:74px}
+.site-header{display:flex;gap:20px}
+.site-header .brand{gap:9px;white-space:nowrap;text-decoration:none}
+.site-header .wordmark{letter-spacing:-.04em;font-size:1.38rem}
+.brand-mark{border-radius:8px;width:38px;height:38px}
+.brand-mark svg{width:32px;height:32px}
+.site-header .public-nav{margin:0;gap:1px;justify-content:center}
+.site-header .public-nav a:not(.cta){padding:7px 10px;font-size:.92rem;font-weight:650}
+.header-actions{margin-left:auto;justify-content:flex-end;align-items:center;gap:10px}
+.header-actions>a:not(.cta){font-size:.89rem;font-weight:650;color:var(--green)}
+body:has(#landing[hidden]) .site-header .public-nav,body:has(#landing[hidden]) .nav-login,body:has(#logout:not([hidden])) .nav-login{display:none}
+body:has(#landing:not([hidden])) .header-privacy{display:none}
+.cta,button,input,select{border-radius:7px}
+.landing-hero{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:stretch;margin-top:24px;min-height:430px;border:1px solid #e0ddd4;border-radius:12px;background:#efebe1;color:var(--ink)}
+.landing-hero::after{display:none}
+.hero-content{align-self:center;padding:clamp(28px,5vw,64px);max-width:none}
+.hero-content .overline{display:flex;align-items:center;gap:7px;color:#544b37;font-size:.84rem;text-transform:none;letter-spacing:0}
+.hero-content h1,.choice-view h1{font:400 clamp(2.35rem,4.6vw,4.4rem)/1.04 "Instrument Serif",Georgia,serif;letter-spacing:-.012em;margin:9px 0 16px}
+.hero-content>p:not(.overline){font-size:1rem;color:#3f515b;max-width:33ch}
+.hero-content .controls{align-items:center;gap:14px}
+.hero-link{color:var(--green);font-weight:750}
+.hero-photo{margin:0;min-width:0;position:relative;min-height:330px;background:#d7d0c4}
+.landing-hero .hero-photo img{position:absolute;inset:0;width:100%;height:100%;z-index:auto;object-position:55% center}
+.public-block{margin:39px 0}
+.public-section h2,.public-block>h2,.hotel-services>h2,.access-banner h2{font:750 clamp(1.4rem,2.4vw,1.85rem)/1.16 "DM Sans",system-ui,sans-serif;letter-spacing:-.035em}
+.public-block>p,.hotel-services p,.hotel-about p{color:var(--muted)}
+.room-cards{gap:14px}
+.room-cards article{border-radius:9px}
+.room-cards img{height:clamp(157px,17vw,215px);object-position:center 54%}
+.room-card-body{padding:15px}
+.room-card-body h3{font-size:1.12rem}
+.room-card-body p{font-size:.94rem}
+.room-card-body .controls{margin-top:13px}
+.hotel-about{margin:34px 0;padding:22px 0;border-block:1px solid var(--line);display:flex;gap:20px;align-items:center;justify-content:space-between}
+.hotel-about p{max-width:66ch;margin-bottom:0}
+.hotel-about>a{color:var(--green);font-weight:750}
+.hotel-services{margin:36px 0}
+.service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.service-grid article{padding:17px;border:1px solid var(--line);border-radius:8px;background:white}
+.service-grid svg{color:var(--green);margin-bottom:8px}
+.service-grid h3{font-size:1rem;margin:0 0 4px}
+.service-grid p{font-size:.93rem;margin:0}
+.access-banner{background:#edf0ea;color:var(--ink);border:1px solid #dce1d8;border-radius:9px}
+.access-banner .gold{background:var(--dark);color:white}
+footer{font-size:.9rem;color:var(--muted)}
+footer strong{color:var(--ink)}
+.choice-view{max-width:900px;margin:auto}
+.choice-view h1{font-size:clamp(2.15rem,4vw,3.45rem)}
+.choice-grid article{border-radius:9px}
+#login{width:min(100%,1060px);min-height:510px;margin:26px auto;border-radius:12px;box-shadow:none}
+.auth-visual{padding:20px}
+.auth-visual::after{background:linear-gradient(0deg,#162c3ab5,transparent 34%)}
+.auth-card h1,.desk-head h1{font:750 clamp(1.6rem,3vw,2.45rem)/1.12 "DM Sans",system-ui,sans-serif;letter-spacing:-.045em}
+.auth-card{padding:clamp(22px,4vw,48px)}
+.auth-card>p{margin-bottom:13px}
+.desk-head{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:18px 22px}
+#hotelName{color:var(--muted)}
+#workspace .side-nav,#workspace section,.panel,.metric{border-radius:8px;box-shadow:none}
+#workspace .side-nav a>svg{width:18px;color:var(--green)}
+#workspace .side-nav a[aria-current]{box-shadow:inset 2px 0 var(--green)}
+#workspace .side-nav{padding:9px}
+#workspace .desk-content h2{font-size:1.15rem}
+thead th{background:#eef1f2;text-transform:none}
+.metric{background:#fff}
+.table{border-radius:7px}
+@media(max-width:900px){.site-header{flex-wrap:wrap;gap:6px 10px;padding:10px 0}.site-header .public-nav{order:3;width:100%;justify-content:flex-start}.site-header .public-nav a:not(.cta){padding:5px 8px}.landing-hero{margin-top:12px}}
+@media(max-width:740px){.landing-hero{grid-template-columns:1fr;min-height:0}.hero-content{padding:24px 20px}.hero-photo{min-height:clamp(200px,48vw,340px)}.service-grid{grid-template-columns:1fr;gap:9px}.hotel-about{align-items:flex-start;flex-direction:column;gap:10px}.header-actions{gap:7px}.header-actions>a:not(.cta){font-size:.84rem}.header-actions .cta{padding-inline:10px}.site-header .public-nav a:not(.cta){font-size:.85rem;min-height:38px}.auth-visual{display:none}#login{min-height:0}}
