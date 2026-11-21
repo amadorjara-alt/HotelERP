@@ -23,7 +23,7 @@ flowchart TB
     Reserve([Guardar reserva])
     Stay([Gestionar estadía])
     Bill([Registrar consumos y consultar total])
-    Portal([Ver perfil propio])
+    Portal([Ver perfil y reservas propias])
     Voice -.->|opción de entrada| Register
     Calendar -.->|puede rellenar fechas| Reserve
     Stay -.->|usa la reserva| Reserve
@@ -33,10 +33,10 @@ flowchart TB
   A --> Invite
   P --> Login & Calendar & Register & Reserve & Stay & Bill
   H --> Voice
-  C --> Login & Portal
+  C --> Login & Portal & Calendar & Voice & Reserve
 ```
 
-El administrador crea el hotel mediante `hotel_onboard`, administra habitaciones y servicios, y solicita invitaciones al servidor con `hotel_invite_staff`. El personal, con rol `receptionist`, trabaja sobre el hotel de su perfil. El huésped puede dictar datos en el formulario de recepción bajo la sesión del operador. El cliente autenticado dispone de un portal donde consulta su propio perfil. El registro por teclado y el dictado alimentan el mismo formulario.
+El administrador crea el hotel mediante `hotel_onboard`, administra habitaciones y servicios, y solicita invitaciones al servidor con `hotel_invite_staff`. El personal, con rol `receptionist`, trabaja sobre el hotel de su perfil. El huésped puede dictar datos en el formulario de recepción bajo la sesión del operador. El cliente autenticado consulta disponibilidad, crea reservas y verifica sus propias estadías. Las habitaciones son de hoteles que han publicado su catálogo. El registro por teclado y el dictado alimentan el mismo formulario.
 
 ## 2. Proceso de registro, reserva y liquidación
 
@@ -44,6 +44,9 @@ El administrador crea el hotel mediante `hotel_onboard`, administra habitaciones
 flowchart TB
   A[Iniciar sesión en recepción] --> B[Consultar calendario]
   B --> C{¿El huésped ya existe?}
+  U[Cliente autenticado] --> V[Consultar catálogo publicado y fechas]
+  V --> W[Confirmar datos propios y reservar]
+  W --> N
   C -->|Sí| J[Seleccionar huésped y habitación]
   C -->|No| D{¿Cómo ingresar los datos?}
   D -->|Teclado| E[Completar campos y revisar]
@@ -69,7 +72,7 @@ flowchart TB
   S --> T[Consultar liquidación y cerrar estadía]
 ```
 
-El calendario presenta siete noches, con nombre textual para cada estado. Una casilla libre preselecciona habitación e ingreso, propone una noche y mueve el foco al selector de huésped. Una casilla con reserva abre su detalle. En el dictado, `listen()` reproduce la instrucción antes de iniciar el reconocimiento en `es-PE`. `emailStep()` interpreta «arroba» y «punto», acepta «sin correo» y repite ante un formato inválido. `review()` lee los tres datos y permite corregirlos. `requestSubmit()` conserva la validación nativa y comparte el envío del formulario de teclado.
+El calendario presenta siete noches, con nombre textual para cada estado. Una casilla libre preselecciona habitación e ingreso, propone una noche y mueve el foco al selector de huésped. Una casilla con reserva abre su detalle. En el dictado, `listen()` reproduce la instrucción antes de iniciar el reconocimiento en `es-PE`. `captureVoiceField()` interpreta «arroba» y «punto», acepta «sin correo» y repite ante un formato inválido. `review()` lee los tres datos y permite corregirlos. `requestSubmit()` conserva la validación nativa y comparte el envío del formulario de teclado.
 
 Si la salida es anterior o igual al ingreso, el frontend detiene el envío. PostgreSQL comprueba las fechas y ejecuta la restricción GiST al insertar. Ante un cruce, `explain()` traduce `23P01` a un mensaje claro. Si se guarda la reserva, la interfaz actualiza el calendario y abre la liquidación correspondiente. El panel permite marcar ingreso o cancelar desde «Reservada», y cerrar desde «Ocupada».
 
@@ -79,6 +82,9 @@ Si la salida es anterior o igual al ingreso, el frontend detiene el envío. Post
 erDiagram
   AUTH_USERS ||--o| PROFILES : autentica
   AUTH_USERS ||--o| CUSTOMERS : autentica
+  CUSTOMERS ||--o{ CUSTOMER_GUEST_LINKS : vincula
+  HOTELS ||--o{ CUSTOMER_GUEST_LINKS : limita
+  GUESTS ||--o| CUSTOMER_GUEST_LINKS : identifica
   HOTELS ||--o{ PROFILES : agrupa
   HOTELS ||--o{ ROOMS : ofrece
   HOTELS ||--o{ GUESTS : registra
@@ -97,6 +103,12 @@ erDiagram
   HOTELS {
     uuid id PK
     text name
+    boolean accepts_online_booking
+  }
+  CUSTOMER_GUEST_LINKS {
+    uuid customer_id PK, FK
+    uuid hotel_id PK, FK
+    uuid guest_id FK, UK
   }
   PROFILES {
     uuid id PK, FK
@@ -117,6 +129,7 @@ erDiagram
     uuid hotel_id FK
     text number
     text name
+    smallint capacity
     numeric nightly_rate
   }
   GUESTS {
@@ -160,7 +173,7 @@ erDiagram
   }
 ```
 
-El exporte registra nueve tablas públicas y las columnas de la vista `reservation_totals`. `auth.users` pertenece al esquema `auth` y se representa con la columna referenciada. Tanto `profiles.id` como `customers.id` apuntan a esa identidad. La función de alta del repositorio comprueba que la cuenta todavía no tenga perfil antes de crear uno.
+El esquema contiene diez tablas de la aplicación y la vista `reservation_totals`. `auth.users` pertenece al esquema `auth` y se representa con la columna referenciada. Tanto `profiles.id` como `customers.id` apuntan a esa identidad. La función de alta del repositorio comprueba que la cuenta todavía no tenga perfil antes de crear uno.
 
 | Regla | Implementación |
 | --- | --- |
@@ -178,7 +191,7 @@ flowchart TB
   Pages[GitHub Pages] -->|Sirve archivos estáticos| UI
   subgraph Browser[Navegador]
     UI[index.html y styles.css]
-    JS[app.js y supabase-js]
+    JS[app.js, hotel-ui.js y voice-assistant.js]
     Speech[Web Speech API]
     UI <-->|Formularios y mensajes| JS
     JS <-->|Texto y audio| Speech
@@ -187,6 +200,7 @@ flowchart TB
     Auth[Supabase Auth]
     API[Data API y RPC]
     DB[PostgreSQL con RLS]
+    Edge[Edge Function process-voice]
     Auth -->|Emite el JWT de sesión| JS
     API -->|Operaciones con identidad de sesión| DB
     DB --> Rules[Claves compuestas y exclusión GiST]
@@ -194,6 +208,8 @@ flowchart TB
   end
   JS -->|Acceso, alta o sesión| Auth
   JS <-->|Consultas, cambios y RPC con JWT| API
+  JS -->|Instrucción autorizada y JWT| Edge
+  Edge -->|Secreto del servidor| AI[API de Gemini]
 ```
 
 GitHub Pages entrega los archivos. El navegador usa Supabase Auth para inicio de sesión con correo y contraseña, con Google como opción si el proveedor está habilitado. `supabase-js` comunica la identidad de sesión a la Data API, y el frontend consulta el perfil para mostrar el panel correspondiente. La base de datos aplica la autorización. Las políticas del repositorio obtienen el hotel desde el perfil del usuario autenticado, permiten al personal operar dentro de su hotel y limitan los cambios de catálogo al administrador. El exporte incluye 17 políticas y registra sus nombres, operaciones y roles. Las expresiones de filtro se describen según las migraciones.
@@ -241,3 +257,17 @@ La voz usa `SpeechRecognition` o `webkitSpeechRecognition` para reconocer el dic
 - [Formulario y estructura semántica](index.html)
 - [Tablas, exclusión y liquidación](supabase/migrations/202611200001_hotel_erp_initial_schema.sql)
 - [Hoteles, permisos y registro de usuarios](supabase/migrations/202611200002_hotel_tenants_and_customer_registration.sql)
+
+## Portal público y reservas vinculadas
+
+- `customer_guest_links` tiene clave compuesta `customer_id, hotel_id` y referencia al huésped del mismo hotel. `hotel_customer_stays` filtra estas vinculaciones por el usuario autenticado. Un cliente no puede apropiarse de un documento ya registrado por recepción.
+- `hotel_public_catalog` sirve capacidad, tarifa y disponibilidad de habitaciones publicadas. La confirmación ejecuta `hotel_customer_book` de forma transaccional y utiliza la misma restricción GiST que recepción.
+- La Edge Function `process-voice` autentica la cuenta, verifica su perfil y envía instrucciones autorizadas a Gemini con un secreto del servidor. Los comandos explícitos siguen disponibles con Web Speech API. El motor de IA no confirma la reserva por cuenta del usuario.
+
+### Preguntas para defender
+
+**¿Cómo se refleja la reserva del cliente en recepción?** El portal llama al RPC de reserva con una sesión válida. El RPC enlaza el huésped del cliente con el hotel y escribe en la misma tabla `reservations` que consulta el calendario administrativo.
+
+**¿Qué evita que una fecha modificada invada otra reserva?** La misma restricción GiST se evalúa al hacer un UPDATE. El formulario solo permite editar pendientes y usa los datos anteriores como condición para evitar reemplazar otra edición.
+
+**¿Qué pasa si falla Gemini o el micrófono?** Gemini es opcional. El reconocimiento del navegador permite usar comandos explícitos. Ante un fallo de micrófono, los datos se pueden escribir y confirmar desde el mismo formulario.
