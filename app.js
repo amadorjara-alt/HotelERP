@@ -1,3 +1,5 @@
+import { createVoiceAssistant } from "./voice-assistant.js?v=5";
+import { createPublicPortal, renderDesk } from "./hotel-ui.js?v=5";
 "use strict";
 const supabaseUrl="https://ynnulzfgsfkojvgbhgua.supabase.co";
 const publishableKey="sb_publishable_mZFB2d_rNKfUal18HRA6iQ_6JZ_xTL-";
@@ -14,7 +16,13 @@ const reservationForm = byId("reservationForm");
 const guestForm = byId("guestForm");
 const serviceForm = byId("serviceForm");
 const reservationSelect = byId("selectedReservation");
-const redirectTo = new URL("./",location.href).href;
+const routeParams=new URLSearchParams(location.search);
+const route=routeParams.get("acceso")||"inicio";
+const accessMode=()=>route==="cliente"?"customer":"hotel";
+const redirectUrl=new URL("./",location.href);
+redirectUrl.searchParams.set("acceso",route==="cliente"?"cliente":"personal");
+redirectUrl.searchParams.set("ingresar","1");
+const redirectTo=redirectUrl.href;
 let rooms=[], guests=[], reservations=[], services=[], totals=[], charges=[];
 let sessionVersion=0;
 function message(text,error=false){
@@ -79,6 +87,7 @@ function drawCalendar(){
         reservationForm.elements.room_id.value=room.id;
         reservationForm.elements.check_in.value=day;
         reservationForm.elements.check_out.value=datePlus(day,1);
+        reservationEstimate();
         reservationForm.elements.guest_id.focus();
       };
       cell(row,"td",button);
@@ -89,6 +98,9 @@ function drawReservation(){
   const reservation=reservations.find(r=>r.id===reservationSelect.value);
   byId("reservationActions").hidden=!reservation;
   if(!reservation) return;
+  const room=rooms.find(item=>item.id===reservation.room_id);
+  const guest=guests.find(item=>item.id===reservation.guest_id);
+  byId("stayDetails").textContent=[byId("hotelName").textContent,"Habitación "+(room?.number||""),guest?.full_name,reservation.check_in+" al "+reservation.check_out].filter(Boolean).join(" · ");
   byId("reservationStatus").textContent=names[reservation.status];
   byId("actions").replaceChildren();
   const transitions={reserved:[["Marcar ingreso","occupied"],["Cancelar reserva","cancelled"]],occupied:[["Cerrar estadía","completed"]]};
@@ -104,6 +116,15 @@ function drawReservation(){
     });
     byId("actions").append(button);
   }
+  if(reservation.status==="reserved"){
+    const edit=document.createElement("button");
+    edit.type="button";
+    edit.className="secondary";
+    edit.textContent="Editar reserva";
+    edit.onclick=()=>openEdit(reservation);
+    byId("actions").append(edit);
+  }
+  byId("printAction").hidden=reservation.status==="cancelled";
   serviceForm.hidden=!["reserved","occupied"].includes(reservation.status);
   byId("charges").replaceChildren();
   for(const charge of charges.filter(c=>c.reservation_id===reservation.id)){
@@ -143,22 +164,14 @@ async function refresh(){
   });
   drawCalendar();
   drawReservation();
+  renderLists();
+  reservationEstimate();
 }
 function bind(form,action){form.onsubmit=handle(form.querySelector("button:not([type=button])"),()=>action(Object.fromEntries(new FormData(form))));}
 
 const onboardingForm=byId("onboardingForm");
 const accessKey="hotelerp-access";
-const accessMode=()=>document.querySelector('#accessMode input:checked').value;
-const previousAccess=sessionStorage.getItem(accessKey);
-if(previousAccess==="customer") document.querySelector('#accessMode input[value="customer"]').checked=true;
-function registrationTitle(){
-  byId("registerTitle").textContent=accessMode()==="customer"?"Registro de clientes":"Registro de hoteles y personal";
-}
-byId("accessMode").onchange=()=>{
-  sessionStorage.setItem(accessKey,accessMode());
-  registrationTitle();
-};
-registrationTitle();
+byId("registerTitle").textContent=route==="cliente"?"Registro de clientes":"Registro de hoteles y personal";
 function registrationMode(active){
   byId("loginForm").hidden=active;
   byId("registerForm").hidden=!active;
@@ -231,6 +244,8 @@ byId("google").onclick=handle(byId("google"),async()=>{
 byId("logout").onclick=handle(byId("logout"),async()=>check(await db.auth.signOut()));
 bind(guestForm,async data=>{
   for(const key of Object.keys(data)) data[key]=data[key].trim();
+  if(!/^[A-Za-z0-9]{5,20}$/.test(data.document_number)) throw new Error("El documento debe tener de 5 a 20 letras o números.");
+  data.document_number=data.document_number.toUpperCase();
   data.email ||= null;
   const guest=check(await db.from("guests").insert(data).select("id").single());
   guestForm.reset();
@@ -259,268 +274,151 @@ firstDay.onchange=drawCalendar;
 reservationSelect.onchange=drawReservation;
 byId("refresh").onclick=handle(byId("refresh"),async()=>{await refresh();message("Datos actualizados.");});
 
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognizer = null;
-let activeUtterance = null;
-let voiceVersion = 0;
 
-function stopVoice() {
-  voiceVersion++;
-  const previousRecognizer = recognizer;
-  recognizer = null;
-  activeUtterance = null;
-  previousRecognizer?.abort();
-  window.speechSynthesis?.cancel();
-}
-
-function speak(text, next) {
-  if (!window.speechSynthesis) {
-    next?.();
-    return;
-  }
-  const utterance = new SpeechSynthesisUtterance(text);
-  activeUtterance = utterance;
-  utterance.lang = "es-PE";
-  utterance.onend = () => {
-    if (activeUtterance !== utterance) return;
-    activeUtterance = null;
-    next?.();
-  };
-  utterance.onerror = event => {
-    if (activeUtterance !== utterance) return;
-    activeUtterance = null;
-    if (!["canceled", "interrupted"].includes(event.error)) {
-      message("La lectura en voz alta no está disponible. Puedes escribir los datos.", true);
-    }
-  };
-  window.speechSynthesis.speak(utterance);
-}
-
-function listen(prompt, onResult, version) {
-  if (version !== voiceVersion) return;
-  message(prompt);
-  speak(prompt, () => {
-    if (version !== voiceVersion) return;
-    const speech = new Recognition();
-    recognizer = speech;
-    speech.lang = "es-PE";
-    speech.continuous = false;
-    speech.interimResults = false;
-    let transcript = "";
-    let recognitionError = "";
-
-    speech.onresult = event => {
-      if (version !== voiceVersion || recognizer !== speech) return;
-      const result = event.results[event.resultIndex];
-      if (result?.isFinal) transcript = result[0].transcript.trim();
-    };
-    speech.onerror = event => {
-      if (version === voiceVersion && recognizer === speech) recognitionError = event.error;
-    };
-    speech.onend = () => {
-      if (version !== voiceVersion || recognizer !== speech) return;
-      recognizer = null;
-      // Wait for the microphone session to close before advancing the dialogue.
-      if (transcript && !recognitionError) {
-        onResult(transcript);
-      } else {
-        const detail = recognitionError ? " (" + recognitionError + ")" : "";
-        message("No se pudo reconocer la voz" + detail + ". Puedes reintentar o escribir los datos.", true);
-      }
-    };
-    try {
-      speech.start();
-    } catch (error) {
-      recognizer = null;
-      message(explain(error), true);
+function renderLists(){
+  renderDesk({rooms,guests,reservations,services,today,currency,names,
+    guestFilter:byId("guestFilter").value,reservationFilter:byId("reservationFilter").value,
+    openBooking: id=>{
+      reservationSelect.value=id;
+      drawReservation();
+      byId("cuenta").scrollIntoView({block:"start"});
+      reservationSelect.focus({preventScroll:true});
     }
   });
 }
-
-function plainVoiceText(text) {
-  return text.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").trim();
+byId("guestFilter").oninput=renderLists;
+byId("reservationFilter").onchange=renderLists;
+function reservationEstimate(){
+  const room=rooms.find(item=>item.id===reservationForm.elements.room_id.value);
+  const start=reservationForm.elements.check_in.value;
+  const end=reservationForm.elements.check_out.value;
+  const nights=start&&end?Math.round((Date.parse(end)-Date.parse(start))/86400000):0;
+  byId("reserveEstimate").textContent=room&&nights>0?nights+" "+(nights===1?"noche":"noches")+" × "+currency.format(room.nightly_rate):"";
 }
-
-function voiceCommand(text) {
-  return plainVoiceText(text).replace(/[¿?¡!.,;:]/g, "").replace(/\s+/g, " ").trim();
+reservationForm.onchange=reservationEstimate;
+const editModal=byId("editDialog");
+const editForm=byId("editReservation");
+let editingReservation=null;
+function openEdit(booking){
+  editingReservation=booking;
+  setOptions(editForm.elements.room_id,rooms,"Seleccionar",r=>r.number+" · "+r.name);
+  setOptions(editForm.elements.guest_id,guests,"Seleccionar",g=>g.full_name);
+  for(const name of ["room_id","guest_id","check_in","check_out"]) editForm.elements[name].value=booking[name];
+  byId("editStatus").textContent="";
+  editModal.showModal();
 }
-
-function normalizeSpokenEmail(text) {
-  const compact = plainVoiceText(text)
-    .replace(/[.,!?]+$/, "")
-    .replace(/\bguion[\s-]+bajo\b/g, "_")
-    .replace(/\bguion\b/g, "-")
-    .replace(/\b(?:arroba|at)\b/g, "@")
-    .replace(/\bpunto\b/g, ".")
-    .replace(/,/g, ".")
-    .replace(/\s+/g, "");
-  return compact.replace(/@(gmail|hotmail|outlook)$/, "@$1.com");
-}
-
-function normalizeSpokenDocument(text) {
-  const digits = {
-    cero: "0", uno: "1", dos: "2", tres: "3", cuatro: "4",
-    cinco: "5", seis: "6", siete: "7", ocho: "8", nueve: "9"
+byId("closeEdit").onclick=()=>editModal.close();
+bind(editForm,async data=>{
+  try{
+    if(data.check_out<=data.check_in) throw new Error("La salida debe ser posterior al ingreso.");
+    const updated=check(await db.from("reservations").update(data).eq("id",editingReservation.id).eq("status","reserved")
+      .eq("room_id",editingReservation.room_id).eq("guest_id",editingReservation.guest_id)
+      .eq("check_in",editingReservation.check_in).eq("check_out",editingReservation.check_out).select("id"));
+    if(!updated.length) throw new Error("La reserva cambió. Cierra la edición y actualiza el calendario.");
+    firstDay.value=data.check_in;
+    editModal.close();
+    await refresh();
+    message("Reserva actualizada.");
+  }catch(error){byId("editStatus").textContent=explain(error);}
+});
+byId("printAction").onclick=()=>{document.body.classList.add("printing");window.print();};
+window.addEventListener("afterprint",()=>document.body.classList.remove("printing"));
+byId("sideLogout").onclick=handle(byId("sideLogout"),async()=>check(await db.auth.signOut()));
+for(const link of document.querySelectorAll(".side-nav a")){
+  link.onclick=()=>{
+    document.querySelector(".side-nav [aria-current]")?.removeAttribute("aria-current");
+    link.setAttribute("aria-current","location");
   };
-  return plainVoiceText(text)
-    .replace(/\b(cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\b/g, word => digits[word])
-    .replace(/[\s.,!?\p{Dash_Punctuation}−]+/gu, "")
-    .toUpperCase();
 }
-
-const spokenFields = [
-  {
-    key: "full_name",
-    initial: "Por favor, indica tu nombre completo.",
-    correction: "Indique el nuevo nombre.",
-    retry: "No escuché un nombre válido. Indique su nombre completo.",
-    parse: answer => answer.trim(),
-    valid: value => /\p{L}/u.test(value)
-  },
-  {
-    key: "document_number",
-    initial: "Indica tu documento. Puedes decir los dígitos uno por uno.",
-    correction: "Indique el nuevo documento.",
-    retry: "No reconocí el documento. Indique nuevamente sus números o letras.",
-    parse: normalizeSpokenDocument,
-    valid: value => /^[A-Z0-9]+$/.test(value)
-  },
-  {
-    key: "email",
-    initial: "Indica tu correo electrónico. Puedes decir arroba y punto, o decir sin correo.",
-    correction: "Indique el nuevo correo electrónico. También puede decir sin correo.",
-    retry: "No reconocí un correo válido. Diga arroba y punto, o diga sin correo.",
-    parse: normalizeSpokenEmail,
-    valid: (value, field) => Boolean(value) && !field.validity.typeMismatch
-  }
-];
-
-function readback() {
-  const fields = guestForm.elements;
-  return "Nombre: " + (fields.full_name.value || "pendiente") +
-    ". Documento: " + (fields.document_number.value || "pendiente") +
-    ". Correo: " + (fields.email.value || "sin correo") + ".";
-}
-
-function captureVoiceField(step, prompt, next, version) {
-  const field = guestForm.elements[step.key];
-  listen(prompt, answer => {
-    const command = voiceCommand(answer);
-    if (command === "detener") {
-      stopVoice();
-      message("Registro por voz detenido.");
-      return;
-    }
-    if (step.key === "email" && ["sin correo", "omitir correo", "no tengo correo", "sin correo electronico"].includes(command)) {
-      field.value = "";
-      next();
-      return;
-    }
-    const value = step.parse(answer);
-    field.value = value;
-    if ((field.maxLength >= 0 && value.length > field.maxLength) || !step.valid(value, field)) {
-      field.value = "";
-      captureVoiceField(step, step.retry, next, version);
-      return;
-    }
-    next();
-  }, version);
-}
-
-function review(version, intro = "") {
-  const prompt = intro + readback() + " Di guardar, corregir nombre, corregir documento, corregir correo o detener.";
-  listen(prompt, answer => {
-    const command = voiceCommand(answer);
-    if (command === "guardar" || command === "confirmar") {
-      stopVoice();
-      guestForm.requestSubmit();
-      return;
-    }
-    if (command === "detener") {
-      stopVoice();
-      message("Registro por voz detenido.");
-      return;
-    }
-    const correction = ["corregir nombre", "corregir documento", "corregir correo"];
-    const index = correction.indexOf(command === "corregir correo electronico" ? "corregir correo" : command);
-    if (index === -1) {
-      review(version, "No reconocí el comando. ");
-      return;
-    }
-    const step = spokenFields[index];
-    guestForm.elements[step.key].value = "";
-    captureVoiceField(step, step.correction, () => review(version), version);
-  }, version);
-}
-
-function collectVoiceFields(index, version) {
-  if (index === spokenFields.length) {
-    review(version);
-    return;
-  }
-  const step = spokenFields[index];
-  captureVoiceField(step, step.initial, () => collectVoiceFields(index + 1, version), version);
-}
-
-byId("voice").onclick = () => {
-  stopVoice();
-  if (!Recognition || !window.speechSynthesis) {
-    message("El registro por voz requiere un navegador compatible. Puedes usar teclado y lector de pantalla.", true);
-    return;
-  }
-  collectVoiceFields(0, voiceVersion);
-};
-byId("read").onclick = () => {
-  stopVoice();
-  const summary = readback();
-  speak(summary);
-  message(summary);
-};
-byId("stop").onclick = () => {
-  stopVoice();
-  message("Registro por voz detenido.");
-};
+const staffVoice=createVoiceAssistant({db,guestForm,byId,message,ids:{voice:"voice",read:"read",stop:"stop",ai:"staffAi"}});
+const customerVoice=createVoiceAssistant({db,guestForm:byId("customerBookingForm"),byId,message,ids:{voice:"customerVoice",read:"customerRead",stop:"customerStop",ai:"customerAi"}});
+const stopVoice=()=>{staffVoice.stop();customerVoice.stop();};
+const portal=createPublicPortal({db,byId,check,bind,message,currency,names,today,route});
+byId("resetPassword").onclick=handle(byId("resetPassword"),async()=>{
+  const field=byId("loginForm").elements.email;
+  if(!field.reportValidity()) return;
+  check(await db.auth.resetPasswordForEmail(field.value,{redirectTo}));
+  message("Si tu correo tiene una cuenta, recibirás instrucciones para restablecer la contraseña.");
+});
+bind(byId("onlineBookingForm"),async ()=>{
+  check(await db.rpc("hotel_set_online_booking",{enabled:byId("onlineBookingForm").elements.enabled.checked}));
+  message("Disponibilidad pública actualizada.");
+});
+let recoveryOpen=false;
+bind(byId("recoveryForm"),async data=>{
+  check(await db.auth.updateUser(data));
+  byId("recoveryForm").reset();
+  recoveryOpen=false;
+  await showSession(check(await db.auth.getSession()).session,"SIGNED_IN");
+  message("Contraseña actualizada.");
+});
 
 async function showSession(session,event,version=++sessionVersion){
   try{
     if(version!==sessionVersion) return;
-    byId("workspace").hidden=true;
-    byId("customerArea").hidden=true;
-    byId("onboarding").hidden=true;
+    if(recoveryOpen&&event!=="SIGNED_OUT"&&event!=="PASSWORD_RECOVERY") return;
+    stopVoice();
+    for(const id of ["workspace","customerArea","onboarding","login","recoveryPanel"]) byId(id).hidden=true;
     byId("logout").hidden=!session;
-    byId("login").hidden=!!session;
     byId("staffCode").value="";
     byId("staffCodeLabel").hidden=true;
-    stopVoice();
-    if(!session){if(event==="SIGNED_OUT") message("Sesión cerrada.");return;}
+    byId("landing").hidden=route!=="inicio";
+    byId("chooseAccess").hidden=route!=="seleccionar";
+    if(event==="PASSWORD_RECOVERY"){
+      recoveryOpen=true;
+      byId("landing").hidden=true;
+      byId("chooseAccess").hidden=true;
+      byId("recoveryPanel").hidden=false;
+      return;
+    }
+    if(route==="inicio"||route==="seleccionar") return;
+    byId("auth-title").textContent=route==="cliente"?"Acceso del cliente":"Acceso del personal";
+    if(!session){
+      recoveryOpen=false;
+      const showLogin=route!=="cliente"||routeParams.has("ingresar");
+      byId("login").hidden=!showLogin;
+      byId("customerArea").hidden=showLogin;
+      portal.show(null);
+      if(event==="SIGNED_OUT") message("Sesión cerrada.");
+      return;
+    }
     const [profile,customer]=await Promise.all([
-      db.from("profiles").select("role,hotel_id,hotels(name)").eq("id",session.user.id).maybeSingle(),
+      db.from("profiles").select("role,hotel_id,hotels(name,accepts_online_booking)").eq("id",session.user.id).maybeSingle(),
       db.from("customers").select("full_name").eq("id",session.user.id).maybeSingle()
     ]).then(results=>results.map(check));
     if(version!==sessionVersion) return;
-    if(profile){
+    if(route==="personal"&&profile){
       byId("hotelName").textContent=profile.hotels?.name||"";
+      byId("staffRole").textContent=profile.role==="admin"?"Perfil: administrador":"Perfil: personal de recepción";
       byId("adminPanel").hidden=profile.role!=="admin";
+      byId("onlineBookingForm").elements.enabled.checked=Boolean(profile.hotels?.accepts_online_booking);
       await refresh();
       if(version!==sessionVersion) return;
       byId("workspace").hidden=false;
-    }else if(customer){
+    }else if(route==="cliente"&&customer){
       byId("customerName").textContent=customer.full_name;
       byId("customerEmail").textContent=session.user.email||"";
       byId("customerArea").hidden=false;
+      portal.show({...customer,email:session.user.email});
+    }else if(profile||customer){
+      message("Esta cuenta pertenece a otro tipo de acceso. Selecciona el portal correspondiente o cierra la sesión.",true);
+      byId("chooseAccess").hidden=false;
+      return;
     }else{
-      onboardingForm.elements.kind.value=sessionStorage.getItem(accessKey)==="customer"?"customer":"staff";
+      const kind=onboardingForm.elements.kind;
+      for(const option of kind.options) option.hidden=route==="cliente"?option.value!=="customer":option.value==="customer";
+      kind.value=route==="cliente"?"customer":"staff";
       updateOnboarding();
       byId("onboarding").hidden=false;
-      message("Elige el perfil con el que vas a usar HotelERP.");
-      onboardingForm.elements.kind.focus();
+      message("Completa tu perfil para continuar.");
+      kind.focus();
       return;
     }
     message("Sesión iniciada.");
   }catch(error){if(version===sessionVersion)message(explain(error),true);}
 }
 db.auth.onAuthStateChange((event,session)=>{
-  if(!["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT"].includes(event)) return;
+  if(!["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT","PASSWORD_RECOVERY"].includes(event)) return;
   const version=++sessionVersion;
   setTimeout(()=>showSession(session,event,version),0);
 });
