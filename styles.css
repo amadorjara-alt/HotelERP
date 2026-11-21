@@ -1,0 +1,102 @@
+:root{--ink:#172b2a;--muted:#52645f;--green:#174b43;--dark:#0e302b;--paper:#fbfaf7;--surface:#fff;--line:#dfe6de;--gold:#efd5a3;--field:#9baaa4;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif}
+[hidden]{display:none!important}
+header{width:min(100% - 48px,1280px);margin:auto;display:flex;justify-content:space-between;align-items:center;min-height:82px;gap:14px;border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;gap:11px;align-items:center;font-size:1.31rem;font-weight:800;letter-spacing:-.045em;color:var(--dark)}
+.brand em{font-style:normal;color:#326b60}
+.mark,.module-icon{display:inline-grid;place-items:center;flex:none;border-radius:12px;width:42px;height:42px;background:var(--dark);color:var(--gold)}
+svg{width:20px;height:20px;flex:none;vertical-align:middle}
+.mark svg{width:25px;height:25px}
+main{width:min(100% - 48px,1280px);margin:0 auto;padding-bottom:44px}
+h1,h2,p{margin-top:0}
+h1,h2{line-height:1.08}
+#status{display:none;color:#174b43;font-weight:650;padding:12px 16px;margin:16px 0 0;background:#e9f3ec;border:1px solid #cde2d4;border-radius:12px}
+#status:not(:empty){display:block}
+#status.error{color:#82271f;background:#fff0eb;border-color:#edc7bd}
+#login{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:stretch;margin:28px 0;min-height:620px;border:1px solid var(--line);border-radius:26px;overflow:hidden;background:var(--surface);box-shadow:0 18px 55px #142a2310}
+.auth-visual{position:relative;overflow:hidden;display:grid;align-content:end;isolation:isolate;min-height:100%;background:var(--dark);color:#fff;padding:clamp(24px,4.5vw,58px)}
+.auth-visual img,.auth-visual::after{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.auth-visual img{z-index:-2;object-position:50% 48%}
+.auth-visual::after{content:"";z-index:-1;background:linear-gradient(180deg,#0e242715 8%,#12272448 38%,#0b211dea 100%)}
+.visual-bell{border:1px solid #fff6;background:#142f2b99;color:var(--gold);margin-bottom:18px}
+.auth-visual h2{font:400 clamp(2.5rem,5vw,4.4rem)/.99 "Instrument Serif",Georgia,serif;letter-spacing:-.01em;margin:0 0 15px;max-width:11ch}
+.auth-visual p{color:#f2f3ed;margin:0 0 20px}
+.photo-credit{color:#fff;font-size:.8rem;text-underline-offset:3px;width:fit-content}
+.auth-card{margin:auto;width:min(100%,490px);padding:clamp(24px,5vw,59px)}
+.auth-card h1{font:400 clamp(2.4rem,4.5vw,3.7rem)/.98 "Instrument Serif",Georgia,serif;letter-spacing:-.025em;margin:0 0 14px}
+.auth-card>p{color:var(--muted);margin-bottom:26px}
+.auth-label{display:inline-flex;gap:8px;align-items:center;color:#305d52;font-weight:750;font-size:.875rem;margin-bottom:14px}
+label{display:grid;gap:6px;font-weight:680;font-size:.92rem;min-width:0}
+input,select,button{font:inherit;border:1px solid var(--field);border-radius:10px;padding:10px 13px;min-width:0;min-height:44px}
+input,select{background:white;color:var(--ink);width:100%}
+button{cursor:pointer;background:var(--green);color:white;border-color:var(--green);font-weight:700}
+button:hover{background:#103c34}
+button.secondary,.google-button{background:#fff;color:var(--dark);border-color:var(--field)}
+button.secondary:hover,.google-button:hover{background:#edf4ee}
+button:disabled{opacity:.62;cursor:wait}
+:focus-visible{outline:3px solid #a45925;outline-offset:3px}
+form,.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+#login form{display:grid;gap:16px}
+.google-button{width:100%;display:flex;align-items:center;justify-content:center;gap:11px}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:.86rem}
+.auth-divider::before,.auth-divider::after{content:"";height:1px;background:var(--line);flex:1}
+.password{position:relative}
+.password input{padding-right:52px}
+.password button{position:absolute;right:4px;top:3px;background:transparent;border:0;color:var(--dark);min-height:38px;padding:6px 11px}
+.password button:hover{background:#edf4ee}
+#workspace{margin-top:22px}
+.desk-head{background:var(--dark);border-radius:20px;color:white;padding:25px 28px;margin-bottom:18px;display:flex;align-items:center;gap:15px}
+.desk-head h1{font:400 clamp(2.1rem,4vw,3.5rem)/1 "Instrument Serif",Georgia,serif;margin:0}
+.desk-head .mark{background:#24554a;width:48px;height:48px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+nav a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 13px;color:var(--dark);background:#fff;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:700}
+nav a:hover{background:#e7f1e8}
+#workspace section{padding:clamp(16px,2.5vw,26px);background:white;border:1px solid var(--line);border-radius:18px;margin-bottom:18px;box-shadow:0 5px 18px #172b2a07;scroll-margin-top:12px}
+#workspace h2{display:flex;align-items:center;gap:10px;font-size:1.22rem;margin-bottom:16px}
+.module-icon{background:#e9f2eb;color:var(--green);border-radius:9px;width:34px;height:34px}
+#registro>p{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:18px}
+.grid form>label{flex:1 1 155px}
+.grid form>.controls{width:100%}
+#voice{display:inline-flex;align-items:center;gap:7px}
+.legend{padding:0;display:flex;flex-wrap:wrap;gap:10px 16px;margin:14px 0 0;list-style:none;font-size:.88rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border:1px solid #70867b;border-radius:4px;background:#e7f5e9}
+.legend .reserved i{background:#ffedc4}
+.legend .occupied i{background:#d6e9fb}
+.legend .completed i{background:#eeebf4}
+.table{overflow:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+thead th{background:#f2f5ef;color:#354d44;text-transform:capitalize;font-size:.875rem}
+tbody tr:last-child>*{border-bottom:0}
+#calendar button{width:100%;font-size:.875rem;padding:6px 8px;min-width:82px;color:#164133;background:#e7f5e9;border-color:#c5e0ca}
+#calendar .reserved{background:#ffedc4;color:#5d3b0b;border-color:#e0c498}
+#calendar .occupied{background:#d6e9fb;color:#174064;border-color:#b5d5ee}
+#calendar .completed{background:#eeebf4;color:#4a4262;border-color:#d6cfe4}
+#calendar button:hover{border-color:currentColor}
+#selectedReservation{max-width:520px}
+#reservationStatus{margin:14px 0;font-weight:700}
+#total dl{display:grid;grid-template-columns:1fr auto;gap:10px 20px;background:#edf4ee;border-radius:14px;padding:16px;max-width:560px}
+#total dl>:nth-last-child(-n+2){border-top:1px solid #b6cfbd;padding-top:10px;font-weight:800}
+dd{margin:0;text-align:right}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+@media(max-width:740px){header,main{width:calc(100% - 28px)}header{min-height:65px}#login{grid-template-columns:1fr;margin-top:15px;min-height:0;border-radius:18px}.auth-visual{min-height:240px;padding:20px}.auth-visual h2{max-width:none;margin-bottom:8px}.auth-visual p{display:none}.visual-bell{margin-bottom:10px}.auth-card{padding:26px 20px 30px}.desk-head{padding:18px}.grid{gap:0}}
+
+.access-mode{margin:0 0 18px;padding:0;border:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.access-mode legend{font-weight:750;font-size:.9rem;margin-bottom:6px}
+.access-mode label{display:flex;align-items:center;gap:6px;min-height:46px;padding:7px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
+.access-mode label:has(:checked){background:#e8f1eb;border-color:#7a9c8a}
+.access-mode input{width:auto;min-height:0;accent-color:var(--green)}
+#login{min-height:660px}
+#registerForm h2{font-size:1.3rem;margin-bottom:0}
+.account-panel{margin:28px auto;background:white;border:1px solid var(--line);border-radius:18px;padding:26px;max-width:720px}
+.account-panel h1{font:400 clamp(2rem,4vw,3rem)/1 "Instrument Serif",Georgia,serif}
+.account-panel form>label{min-width:min(240px,100%);flex:1}
+#customerArea dd{text-align:left;margin-bottom:12px}
+#customerArea dt{font-weight:750}
+#adminPanel form h3{width:100%;margin:4px 0;font-size:1rem}
+#staffCodeLabel{margin-top:10px;max-width:420px}
+#hotelName{margin:8px 0 0;color:#e3eee8}
+@media(max-width:740px){#login{min-height:0}}
