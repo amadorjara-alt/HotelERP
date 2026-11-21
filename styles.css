@@ -198,3 +198,16 @@ thead th{background:#eef1f2;text-transform:none}
 .table{border-radius:7px}
 @media(max-width:900px){.site-header{flex-wrap:wrap;gap:6px 10px;padding:10px 0}.site-header .public-nav{order:3;width:100%;justify-content:flex-start}.site-header .public-nav a:not(.cta){padding:5px 8px}.landing-hero{margin-top:12px}}
 @media(max-width:740px){.landing-hero{grid-template-columns:1fr;min-height:0}.hero-content{padding:24px 20px}.hero-photo{min-height:clamp(200px,48vw,340px)}.service-grid{grid-template-columns:1fr;gap:9px}.hotel-about{align-items:flex-start;flex-direction:column;gap:10px}.header-actions{gap:7px}.header-actions>a:not(.cta){font-size:.84rem}.header-actions .cta{padding-inline:10px}.site-header .public-nav a:not(.cta){font-size:.85rem;min-height:38px}.auth-visual{display:none}#login{min-height:0}}
+
+header:not(.site-header)>.brand{text-decoration:none;white-space:nowrap}
+header:not(.site-header)>.brand::before{content:"";width:36px;height:36px;flex:none;background:url("./marca.svg") center/contain no-repeat}
+header:not(.site-header)>nav{gap:3px;margin:0;justify-content:flex-end}
+header:not(.site-header)>nav>a{border:0;background:transparent;padding:7px 9px}
+main>.panel:first-of-type{margin-top:24px}
+.panel>h1{font-size:clamp(1.8rem,3.8vw,2.55rem);letter-spacing:-.045em;margin:0 0 12px}
+.panel>h2{letter-spacing:-.023em;margin-top:20px}
+.panel>h2:first-child{margin-top:0}
+.panel>details{border-top:1px solid var(--line);padding:12px 0}
+.panel>details[open]>summary{margin-bottom:8px}
+.panel summary{cursor:pointer;font-weight:700;color:var(--green)}
+@media(max-width:480px){header:not(.site-header){gap:4px 10px;flex-wrap:wrap;padding-block:8px}header:not(.site-header)>nav>a{padding:6px}}
