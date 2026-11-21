@@ -1,5 +1,7 @@
 "use strict";
-const db = supabase.createClient("https://ynnulzfgsfkojvgbhgua.supabase.co", "sb_publishable_mZFB2d_rNKfUal18HRA6iQ_6JZ_xTL-");
+const supabaseUrl="https://ynnulzfgsfkojvgbhgua.supabase.co";
+const publishableKey="sb_publishable_mZFB2d_rNKfUal18HRA6iQ_6JZ_xTL-";
+const db=supabase.createClient(supabaseUrl,publishableKey);
 const byId = id => document.getElementById(id);
 const dateFormat = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Lima",year:"numeric",month:"2-digit",day:"2-digit"});
 const shortDate = new Intl.DateTimeFormat("es-PE",{timeZone:"UTC",weekday:"short",day:"numeric",month:"short"});
@@ -213,7 +215,19 @@ byId("togglePassword").onclick=()=>{
   byId("togglePassword").setAttribute("aria-pressed",String(show));
   byId("togglePassword").setAttribute("aria-label",show?"Ocultar contraseña":"Mostrar contraseña");
 };
-byId("google").onclick=handle(byId("google"),async()=>{sessionStorage.setItem(accessKey,accessMode());check(await db.auth.signInWithOAuth({provider:"google",options:{redirectTo}}));});
+byId("google").onclick=handle(byId("google"),async()=>{
+  const response=await fetch(supabaseUrl+"/auth/v1/settings",{
+    headers:{apikey:publishableKey},signal:AbortSignal.timeout(8000)
+  });
+  if(!response.ok) throw new Error("No pudimos verificar el acceso con Google. Intenta de nuevo o ingresa con tu correo.");
+  const settings=await response.json();
+  if(settings.external?.google===false){
+    message("El acceso con Google está pendiente de activación. Puedes ingresar o crear tu cuenta con correo.",true);
+    return;
+  }
+  sessionStorage.setItem(accessKey,accessMode());
+  check(await db.auth.signInWithOAuth({provider:"google",options:{redirectTo}}));
+});
 byId("logout").onclick=handle(byId("logout"),async()=>check(await db.auth.signOut()));
 bind(guestForm,async data=>{
   for(const key of Object.keys(data)) data[key]=data[key].trim();
