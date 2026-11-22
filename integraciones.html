@@ -1,8 +1,43 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ayuda e integraciones · HotelERP</title><link rel="stylesheet" href="./styles.css?v=5"><script src="./integraciones.js?v=2" defer></script></head><body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Información"><a href="./">Inicio</a><a href="./privacidad.html">Privacidad</a><a href="./integraciones.html">Ayuda</a></nav></header><main>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ayuda e integraciones · HotelERP</title><link rel="stylesheet" href="./styles.css?v=ui-theme-1"><script src="./integraciones.js?v=2" defer></script><script src="./tema.js?v=1"></script></head><body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Información"><a href="./">Inicio</a><a href="./privacidad.html">Privacidad</a><a href="./integraciones.html">Ayuda</a><a href="./?acceso=seleccionar">Iniciar sesión</a><button type="button" class="secondary theme-toggle" data-theme-toggle aria-label="Tema oscuro" aria-pressed="false" hidden>Tema oscuro</button></nav></header><main>
 <section class="panel"><p class="overline">Información para tu estadía</p><h1>Ayuda e integraciones</h1>
 <details><summary>¿Cómo reservo una habitación?</summary><p>Entra al portal de clientes, elige las fechas, consulta disponibilidad y selecciona una habitación. Necesitas completar tu perfil para confirmar.</p><p><a href="./?acceso=cliente">Abrir el portal</a></p></details>
 <details><summary>¿Cómo funciona el registro por voz?</summary><p>El botón del micrófono inicia un asistente que escucha, rellena y lee los campos. Puedes decir «corregir nombre», «corregir documento» o «corregir correo». Los datos se guardan cuando confirmas.</p></details>
 <details><summary>¿Puedo iniciar sesión con Google?</summary><p id="googleState" role="status">Comprobando el proveedor de Google.</p></details>
+</section>
+
+<section class="panel" aria-labelledby="apiResumenTitulo">
+  <h2 id="apiResumenTitulo">Integraciones de HotelERP</h2>
+  <div class="api-grid">
+    <article class="api-card">
+      <h3>Supabase PostgreSQL + RLS</h3>
+      <p>Guarda habitaciones, reservas y liquidaciones. Supabase Auth identifica
+      la cuenta y RLS limita qué filas puede leer o cambiar cada usuario.</p>
+    </article>
+    <article class="api-card">
+      <h3>Web Speech API + Google Gemini</h3>
+      <p>El navegador escucha y lee el nombre, el documento y el correo.
+      Puedes corregirlos antes de confirmar. Gemini interpreta instrucciones
+      de forma opcional, cuando está configurado y lo autorizas.</p>
+    </article>
+    <article class="api-card">
+      <h3>Open-Meteo Clima</h3>
+      <p>Muestra máximas, mínimas y probabilidad de lluvia en Lima.</p>
+      <a href="#travelWeather">Consultar pronóstico</a>
+    </article>
+    <article class="api-card">
+      <h3>API Tipo de Cambio y Feriados</h3>
+      <p>Frankfurter consulta tasas de referencia entre soles, dólares y euros.
+      Nager.Date muestra los feriados nacionales de Perú.</p>
+      <a href="#exchangeTitle">Abrir conversor</a> ·
+      <a href="#travelHolidays">Ver feriados</a>
+    </article>
+    <article class="api-card">
+      <h3>Pasarelas Sandbox Stripe/PayPal</h3>
+      <p>Permiten simular pagos de estadías cerradas. Stripe usa soles y
+      PayPal Sandbox usa dólares. Cada proveedor requiere configuración de prueba.</p>
+      <a href="./pagos.html">Abrir pagos de prueba</a>
+    </article>
+  </div>
 </section>
 <section class="panel" aria-labelledby="exchangeTitle"><h2 id="exchangeTitle">Conversor referencial de moneda</h2><p>Consulta un tipo de cambio de referencia. Los importes de HotelERP se liquidan en soles.</p>
 <form id="exchangeForm"><label>Importe<input name="amount" type="number" min="0" max="1000000" step="0.01" value="150" required></label><label>Desde<select name="from"><option>PEN</option><option>USD</option><option>EUR</option></select></label><label>Hacia<select name="to"><option>USD</option><option>PEN</option><option>EUR</option></select></label><button type="submit">Convertir</button></form><p id="exchangeResult" role="status" aria-live="polite"></p><a href="https://frankfurter.dev/">Fuente de las tasas: Frankfurter</a></section>

@@ -211,3 +211,104 @@ main>.panel:first-of-type{margin-top:24px}
 .panel>details[open]>summary{margin-bottom:8px}
 .panel summary{cursor:pointer;font-weight:700;color:var(--green)}
 @media(max-width:480px){header:not(.site-header){gap:4px 10px;flex-wrap:wrap;padding-block:8px}header:not(.site-header)>nav>a{padding:6px}}
+
+/* Tema de pantalla y resumen de integraciones */
+.theme-toggle { white-space: nowrap; min-height: 44px; }
+.theme-toggle[aria-pressed="true"]::after { content: " ✓"; }
+.api-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.9rem;
+}
+.api-card {
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+}
+.api-card h3 { margin: 0 0 0.45rem; font-size: 1rem; }
+.api-card p { margin: 0 0 0.6rem; color: var(--muted); }
+
+@media screen {
+  :root[data-hotelerp-theme="dark"] {
+    color-scheme: dark;
+    --paper: #111827;
+    --surface: #1e293b;
+    --ink: #f1f5f9;
+    --muted: #c3d0de;
+    --dark: #cae3ff;
+    --green: #a9d9ff;
+    --line: #52647d;
+    --field: #8fa4bc;
+    --theme-soft: #29394f;
+    --theme-action: #294b67;
+    --theme-hover: #345d7d;
+    --gold: #ffe5a6;
+  }
+
+  [data-hotelerp-theme="dark"] :is(.panel, .account-panel, .desk-head, .access-banner,
+    .landing-hero, .room-cards article, .choice-grid article, .service-grid article, .metric,
+    #workspace section, #workspace .side-nav, dialog) {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--ink);
+  }
+  [data-hotelerp-theme="dark"] :is(.brand em, .overline, .hero-content .overline,
+    .hero-content > p:not(.overline), #login .auth-label, .side-nav span) { color: var(--muted); }
+  [data-hotelerp-theme="dark"] a:not(.cta, .photo-credit) { color: var(--green); }
+  [data-hotelerp-theme="dark"] .photo-credit { color: white; }
+
+  [data-hotelerp-theme="dark"] :is(.mark, .module-icon, .choice-icon, .cta, button) {
+    background: var(--theme-action);
+    color: #fff;
+    border-color: var(--field);
+  }
+  [data-hotelerp-theme="dark"] :is(.cta:hover, button:hover) {
+    background: var(--theme-hover);
+  }
+  [data-hotelerp-theme="dark"] :is(.gold, .gold:hover) {
+    color: #172232;
+    background: var(--gold);
+  }
+  [data-hotelerp-theme="dark"] :is(button.secondary, .google-button, nav a:not(.cta)) {
+    background: var(--surface);
+    color: var(--dark);
+    border-color: var(--field);
+  }
+  [data-hotelerp-theme="dark"] :is(button.secondary:hover, .google-button:hover,
+    .password button:hover, .text-button:hover, nav a:not(.cta):hover,
+    #workspace .side-nav a[aria-current], #workspace .side-nav a:hover,
+    button.theme-toggle[aria-pressed="true"]) { background: var(--theme-soft); }
+  [data-hotelerp-theme="dark"] .password button:not(:hover) { background: transparent; }
+
+  [data-hotelerp-theme="dark"] :is(input, select) {
+    background: var(--paper);
+    color: var(--ink);
+    accent-color: var(--green);
+  }
+  [data-hotelerp-theme="dark"] input::placeholder { color: var(--muted); opacity: 1; }
+  [data-hotelerp-theme="dark"] :is(thead th, #total dl, .access-mode label:has(:checked)) {
+    background: var(--theme-soft);
+    color: var(--ink);
+  }
+  [data-hotelerp-theme="dark"] #status {
+    background: #173326; color: #d1fae5; border-color: #6c9a80;
+  }
+  [data-hotelerp-theme="dark"] #status.error {
+    background: #48282e; color: #ffe1df; border-color: #bc8187;
+  }
+  [data-hotelerp-theme="dark"] #editStatus { color: #ffbab8; }
+  [data-hotelerp-theme="dark"] #calendar button {
+    background: #153a30; color: #dcfce7; border-color: #7cafa0;
+  }
+  [data-hotelerp-theme="dark"] #calendar .reserved {
+    background: #463519; color: #fff0c2; border-color: #c2a775;
+  }
+  [data-hotelerp-theme="dark"] #calendar .occupied {
+    background: #203c59; color: #dbeafe; border-color: #85aace;
+  }
+  [data-hotelerp-theme="dark"] #calendar .completed {
+    background: #382f53; color: #f1e6ff; border-color: #ad9bc9;
+  }
+  [data-hotelerp-theme="dark"] :focus-visible { outline-color: #ffd27a; }
+}

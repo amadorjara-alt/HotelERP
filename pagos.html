@@ -1,8 +1,8 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pagos de prueba · HotelERP</title><link rel="stylesheet" href="./styles.css?v=5"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="./pagos.js"></script></head>
-<body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Pagos"><a href="./?acceso=cliente">Mi portal</a><a href="./privacidad.html">Privacidad</a></nav></header>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pagos de prueba · HotelERP</title><link rel="stylesheet" href="./styles.css?v=ui-theme-1"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="./pagos.js"></script><script src="./tema.js?v=1"></script></head>
+<body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Pagos"><a href="./?acceso=cliente">Mi portal</a><a href="./privacidad.html">Privacidad</a><a id="paymentLogin" href="./?acceso=cliente&amp;ingresar=1" hidden>Iniciar sesión como cliente</a><button type="button" class="secondary theme-toggle" data-theme-toggle aria-label="Tema oscuro" aria-pressed="false" hidden>Tema oscuro</button></nav></header>
 <main><section class="panel"><p class="overline">Entorno de pruebas</p><h1>Pagos de prueba</h1><p>Consulta una estadía cerrada y abre el checkout de prueba de tu proveedor. Usa solo cuentas o tarjetas de prueba.</p>
 <p id="paymentStatus" role="status" aria-live="polite">Buscando estadías…</p>
-<a id="paymentLogin" href="./?acceso=cliente&amp;ingresar=1" hidden>Iniciar sesión como cliente</a>
+
 <form id="paymentForm" hidden><label>Estadía<select name="reservation" required></select></label><button type="submit">Consultar métodos de prueba</button></form>
 <div id="paymentMethods" hidden><h2>Liquidación y métodos</h2><p id="paymentAmount"></p><div class="controls"><button id="payVisa" type="button" disabled>Tarjeta Visa · Stripe</button><button id="payPaypal" type="button" disabled>PayPal Sandbox</button><button id="verifyPayment" type="button" class="secondary" hidden>Verificar pago de prueba</button></div><p id="paymentAvailability"></p></div>
 </section></main></body></html>
