@@ -312,3 +312,177 @@ main>.panel:first-of-type{margin-top:24px}
   }
   [data-hotelerp-theme="dark"] :focus-visible { outline-color: #ffd27a; }
 }
+
+/* HotelERP: diseño ejecutivo */
+@media screen {
+  :root {
+    --pro-glass: rgb(248 247 243 / 88%);
+    --pro-accent: #165b88;
+    --pro-ring: rgb(22 91 136 / 28%);
+    --pro-hover: #eaf1f6;
+    --pro-hero: rgb(159 199 221 / 32%);
+    --pro-shadow: 0 3px 8px rgb(16 38 59 / 6%), 0 10px 22px rgb(16 38 59 / 7%);
+    --pro-raised: 0 8px 18px rgb(16 38 59 / 12%), 0 16px 34px rgb(16 38 59 / 10%);
+    --pro-radius: 14px;
+    --pro-ease: cubic-bezier(.22, .61, .36, 1);
+    --pro-header-offset: 6.25rem;
+    scroll-padding-top: var(--pro-header-offset);
+  }
+
+  :root[data-hotelerp-theme="dark"] {
+    --pro-glass: rgb(17 24 39 / 90%);
+    --pro-accent: #abd7ff;
+    --pro-ring: rgb(171 215 255 / 36%);
+    --pro-hover: #25374e;
+    --pro-hero: rgb(90 156 216 / 24%);
+    --pro-shadow: 0 4px 10px rgb(0 0 0 / 21%), 0 12px 26px rgb(0 0 0 / 19%);
+    --pro-raised: 0 10px 22px rgb(0 0 0 / 28%), 0 18px 36px rgb(0 0 0 / 24%);
+  }
+
+  body > header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 8px 18px -16px rgb(16 38 59 / 40%);
+  }
+
+  @supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+    body > header {
+      background: var(--pro-glass);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  #workspace .side-nav { top: var(--pro-header-offset); }
+
+  body > header :is(nav, .header-actions) > a:not(.cta) {
+    position: relative;
+  }
+  body > header :is(nav, .header-actions) > a:not(.cta)::after {
+    content: "";
+    position: absolute;
+    inset: auto 0.5rem 0.2rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--pro-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+  body > header :is(nav, .header-actions) > a:not(.cta):is(:hover, :focus-visible)::after {
+    transform: scaleX(1);
+  }
+
+  .landing-hero {
+    border-color: var(--line);
+    border-radius: calc(var(--pro-radius) + 4px);
+    background-image: radial-gradient(ellipse at 10% 0%, var(--pro-hero), transparent 66%);
+    box-shadow: var(--pro-shadow);
+  }
+  .hero-content h1 { text-wrap: balance; }
+
+  :is(.room-cards article, .metric, .api-card, .stay-card) {
+    border: 1px solid var(--line);
+    border-radius: var(--pro-radius);
+    background-color: var(--surface);
+    box-shadow: var(--pro-shadow);
+  }
+  .stay-card { padding: 1rem; margin-block: 0.75rem; }
+  :is(.room-cards article, .api-card, .stay-card):focus-within {
+    border-color: var(--pro-accent);
+  }
+
+  :is(table, #reserveEstimate, #reservationStatus, #total, #paymentAmount,
+    #exchangeResult, .room-card-body p, .metric, input[type="number"],
+    input[type="date"]) { font-variant-numeric: tabular-nums; }
+
+  .metric strong {
+    font-size: clamp(1.55rem, 2.6vw, 2.05rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1.15;
+  }
+  .metric span { color: var(--muted); font-size: 0.875rem; }
+
+  :is(#reservationStatus, #reserveEstimate):not(:empty) {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--pro-hover);
+    color: var(--ink);
+    font-weight: 750;
+  }
+  #calendar button { border-radius: 999px; }
+  .table { border-radius: var(--pro-radius); }
+  th, td { padding: 0.65rem 0.8rem; }
+  thead th { font-weight: 750; }
+  table:not(#calendar) tbody tr:is(:hover, :focus-within) > * {
+    background-color: var(--pro-hover);
+  }
+
+  :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
+    border-radius: 10px;
+  }
+  :is(input, select, textarea):focus-visible {
+    outline: 2px solid var(--pro-accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px var(--pro-ring);
+  }
+
+  /* El halo también funciona al presionar con movimiento reducido. */
+  :is(#voice, #customerVoice):is(:active, [aria-pressed="true"], [aria-busy="true"]) {
+    box-shadow: 0 0 0 4px var(--pro-ring);
+  }
+
+  @media (max-width: 900px) {
+    :root { --pro-header-offset: 9.5rem; }
+  }
+  @media (max-width: 480px) {
+    /* Limita el área fija para dejar espacio al contenido y al teclado. */
+    body > header { max-height: 36vh; overflow-y: auto; }
+    :root { --pro-header-offset: 36vh; }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0.82; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes voicePulse {
+    from { box-shadow: 0 0 0 2px var(--pro-ring); }
+    to { box-shadow: 0 0 0 11px transparent; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :is(#landing, #workspace, #customerArea, #login, .account-panel, main > .panel):not([hidden]) {
+      animation: fadeSlideUp 360ms var(--pro-ease) backwards;
+    }
+    body > header :is(nav, .header-actions) > a:not(.cta)::after {
+      transition: transform 220ms var(--pro-ease);
+    }
+    :is(.room-cards article, .metric, .api-card, .stay-card, .cta,
+      button:not(.secondary, .google-button, .text-button, #togglePassword, #calendar button)) {
+      transition: transform 220ms var(--pro-ease), box-shadow 220ms var(--pro-ease),
+        filter 220ms var(--pro-ease);
+    }
+    :is(#voice, #customerVoice):is(:active, [aria-pressed="true"], [aria-busy="true"]) {
+      animation: voicePulse 1.3s ease-out infinite;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      :is(.room-cards article, .metric, .api-card, .stay-card):hover {
+        transform: translateY(-4px);
+        box-shadow: var(--pro-raised);
+      }
+      :is(.cta, button:not(.secondary, .google-button, .text-button,
+        #togglePassword, #calendar button)):hover:not(:disabled):not(:active) {
+        transform: translateY(-2px);
+        filter: brightness(1.07);
+        box-shadow: var(--pro-raised);
+      }
+    }
+  }
+}
