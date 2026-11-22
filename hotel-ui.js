@@ -28,7 +28,7 @@ function fillTable(id,caption,headers,data){
 
 export function renderDesk({rooms,guests,reservations,services,today,currency,names,guestFilter,reservationFilter,openBooking}){
   const active=reservations.filter(r=>r.status==="reserved"||r.status==="occupied");
-  const tonight=active.filter(r=>r.check_in<=today&&today<r.check_out);
+  const tonight=reservations.filter(r=>r.status!=="cancelled"&&r.check_in<=today&&today<r.check_out);
   const occupied=tonight.filter(r=>r.status==="occupied").length;
   const metrics=[
     ["Habitaciones",rooms.length],["Disponibles hoy",Math.max(0,rooms.length-tonight.length)],

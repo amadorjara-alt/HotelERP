@@ -1,5 +1,5 @@
-import { createVoiceAssistant } from "./voice-assistant.js?v=5";
-import { createPublicPortal, renderDesk } from "./hotel-ui.js?v=5";
+import { createVoiceAssistant } from "./voice-assistant.js?v=7";
+import { createPublicPortal, renderDesk } from "./hotel-ui.js?v=7";
 "use strict";
 const supabaseUrl="https://ynnulzfgsfkojvgbhgua.supabase.co";
 const publishableKey="sb_publishable_mZFB2d_rNKfUal18HRA6iQ_6JZ_xTL-";
@@ -26,8 +26,12 @@ const redirectTo=redirectUrl.href;
 let rooms=[], guests=[], reservations=[], services=[], totals=[], charges=[];
 let sessionVersion=0;
 function message(text,error=false){
-  const status=byId("status");status.textContent=text;status.setAttribute("role",error?"alert":"status");status.setAttribute("aria-live",error?"assertive":"polite");status.setAttribute("aria-atomic","true");
-  byId("status").classList.toggle("error",error);
+  const status = byId("status");
+  status.setAttribute("role", error ? "alert" : "status");
+  status.setAttribute("aria-live", error ? "assertive" : "polite");
+  status.setAttribute("aria-atomic", "true");
+  status.classList.toggle("error", error);
+  status.textContent = text;
 }
 function check(result){
   if(result.error) throw result.error;

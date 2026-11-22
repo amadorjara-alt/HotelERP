@@ -17,26 +17,35 @@ flowchart TB
     Login([Iniciar sesión])
     Admin([Crear hotel y gestionar catálogo])
     Invite([Invitar personal])
+    Publish([Publicar catálogo del hotel])
     Calendar([Consultar disponibilidad])
     Register([Registrar huésped])
     Voice([Dictar y revisar datos])
     Reserve([Guardar reserva])
     Stay([Gestionar estadía])
     Bill([Registrar consumos y consultar total])
-    Portal([Ver perfil y reservas propias])
+    Catalog([Consultar catálogo por fechas])
+    Online([Reservar en el portal])
+    Link([Vincular cliente y huésped])
+    Portal([Ver perfil y estadías propias])
+    Pay([Consultar pago de prueba])
+    Catalog -.->|permite elegir habitación| Online
+    Online -.->|crea o reutiliza| Link
+    Online -.->|usa dictado opcional| Voice
+    Portal -.->|si la estadía está cerrada| Pay
     Voice -.->|opción de entrada| Register
     Calendar -.->|puede rellenar fechas| Reserve
     Stay -.->|usa la reserva| Reserve
     Bill -.->|usa la reserva| Stay
   end
   A --> Admin
-  A --> Invite
+  A --> Invite & Publish
   P --> Login & Calendar & Register & Reserve & Stay & Bill
   H --> Voice
-  C --> Login & Portal & Calendar & Voice & Reserve
+  C --> Login & Catalog & Online & Portal
 ```
 
-El administrador crea el hotel mediante `hotel_onboard`, administra habitaciones y servicios, y solicita invitaciones al servidor con `hotel_invite_staff`. El personal, con rol `receptionist`, trabaja sobre el hotel de su perfil. El huésped puede dictar datos en el formulario de recepción bajo la sesión del operador. El cliente autenticado consulta disponibilidad, crea reservas y verifica sus propias estadías. Las habitaciones son de hoteles que han publicado su catálogo. El registro por teclado y el dictado alimentan el mismo formulario.
+El formulario de alta llama a `hotel_finish_registration`, que guarda la ficha privada y crea el perfil. El administrador puede publicar la disponibilidad de su hotel, administrar habitaciones y servicios y solicitar invitaciones al servidor con `hotel_invite_staff`. El personal, con rol `receptionist`, trabaja sobre el hotel de su perfil. El huésped puede dictar datos en el formulario de recepción bajo la sesión del operador. El cliente autenticado consulta disponibilidad, crea reservas y verifica sus propias estadías. Al reservar, el cliente selecciona una habitación publicada y el servidor crea o reutiliza el vínculo con el huésped del hotel. El registro por teclado y el dictado alimentan el mismo formulario.
 
 ## 2. Proceso de registro, reserva y liquidación
 
@@ -44,9 +53,11 @@ El administrador crea el hotel mediante `hotel_onboard`, administra habitaciones
 flowchart TB
   A[Iniciar sesión en recepción] --> B[Consultar calendario]
   B --> C{¿El huésped ya existe?}
-  U[Cliente autenticado] --> V[Consultar catálogo publicado y fechas]
-  V --> W[Confirmar datos propios y reservar]
-  W --> N
+  U[Cliente consulta catálogo publicado] --> V[Elegir fechas y habitación disponible]
+  V --> W[Iniciar sesión y confirmar datos por voz o teclado]
+  W --> Y["RPC hotel_customer_book"]
+  Y --> Z[Crear o reutilizar vínculo cliente y huésped]
+  Z --> N
   C -->|Sí| J[Seleccionar huésped y habitación]
   C -->|No| D{¿Cómo ingresar los datos?}
   D -->|Teclado| E[Completar campos y revisar]
@@ -66,13 +77,14 @@ flowchart TB
   M -->|Sí| N[Insertar reserva en PostgreSQL]
   N --> O{¿La habitación se cruza?}
   O -->|Sí| Q[Mostrar error 23P01]
-  Q --> L
-  O -->|No| R[Actualizar calendario y seleccionar reserva]
+  Q --> X[Elegir otras fechas y reintentar]
+  O -->|No| R[Reflejar reserva en el calendario de recepción]
   R --> S[Marcar ingreso y registrar consumos]
   S --> T[Consultar liquidación y cerrar estadía]
+  R -.->|Reserva vinculada| R2[Consultar la estadía en Mis reservas]
 ```
 
-El calendario presenta siete noches, con nombre textual para cada estado. Una casilla libre preselecciona habitación e ingreso, propone una noche y mueve el foco al selector de huésped. Una casilla con reserva abre su detalle. En el dictado, `listen()` reproduce la instrucción antes de iniciar el reconocimiento en `es-PE`. `captureVoiceField()` interpreta «arroba» y «punto», acepta «sin correo» y repite ante un formato inválido. `review()` lee los tres datos y permite corregirlos. `requestSubmit()` conserva la validación nativa y comparte el envío del formulario de teclado.
+El calendario presenta siete noches, con nombre textual para cada estado. Una casilla libre preselecciona habitación e ingreso, propone una noche y mueve el foco al selector de huésped. Una casilla con reserva abre su detalle. En el dictado, `listen()` reproduce la instrucción antes de iniciar el reconocimiento en `es-PE`. `captureVoiceField()` recibe el correo dictado. El normalizador elimina tildes, convierte «arroba», «punto», «guion» y «guion bajo», y completa dominios frecuentes como Gmail. El campo puede omitirse con «sin correo». `review()` lee los tres datos. Al oír «corregir correo», «corregir nombre» o «corregir documento», limpia el campo, vuelve a escucharlo y lee el resumen completo. «Guardar» o «confirmar» envía el formulario. El fallo al abrir el micrófono se anuncia con una alerta y permite continuar escribiendo. `requestSubmit()` conserva la validación nativa y comparte el envío del formulario de teclado.
 
 Si la salida es anterior o igual al ingreso, el frontend detiene el envío. PostgreSQL comprueba las fechas y ejecuta la restricción GiST al insertar. Ante un cruce, `explain()` traduce `23P01` a un mensaje claro. Si se guarda la reserva, la interfaz actualiza el calendario y abre la liquidación correspondiente. El panel permite marcar ingreso o cancelar desde «Reservada», y cerrar desde «Ocupada».
 
@@ -82,6 +94,7 @@ Si la salida es anterior o igual al ingreso, el frontend detiene el envío. Post
 erDiagram
   AUTH_USERS ||--o| PROFILES : autentica
   AUTH_USERS ||--o| CUSTOMERS : autentica
+  AUTH_USERS ||--o| ACCOUNT_DETAILS : identifica
   CUSTOMERS ||--o{ CUSTOMER_GUEST_LINKS : vincula
   HOTELS ||--o{ CUSTOMER_GUEST_LINKS : limita
   GUESTS ||--o| CUSTOMER_GUEST_LINKS : identifica
@@ -96,9 +109,18 @@ erDiagram
   GUESTS ||--o{ RESERVATIONS : figura_en
   RESERVATIONS ||--o{ RESERVATION_SERVICES : incluye
   SERVICES ||--o{ RESERVATION_SERVICES : se_cobra_en
+  RESERVATIONS ||--o| SANDBOX_PAYMENTS : liquida
+  CUSTOMERS o|--o{ SANDBOX_PAYMENTS : inicia
   RESERVATIONS ||..o| RESERVATION_TOTALS : calcula
   AUTH_USERS {
     uuid id PK
+  }
+  ACCOUNT_DETAILS {
+    uuid id PK, FK
+    text full_name
+    smallint age
+    text gender
+    text dni
   }
   HOTELS {
     uuid id PK
@@ -163,6 +185,19 @@ erDiagram
     int quantity
     numeric unit_price
   }
+  SANDBOX_PAYMENTS {
+    uuid id PK
+    uuid reservation_id FK, UK
+    uuid customer_id FK
+    text provider
+    int pen_cents
+    int charged_cents
+    text currency
+    text external_id
+    text checkout_url
+    text status
+    timestamptz created_at
+  }
   RESERVATION_TOTALS {
     uuid reservation_id
     int nights
@@ -173,7 +208,7 @@ erDiagram
   }
 ```
 
-El esquema contiene diez tablas de la aplicación y la vista `reservation_totals`. `auth.users` pertenece al esquema `auth` y se representa con la columna referenciada. Tanto `profiles.id` como `customers.id` apuntan a esa identidad. La función de alta del repositorio comprueba que la cuenta todavía no tenga perfil antes de crear uno.
+El esquema contiene 12 tablas públicas y la vista `reservation_totals`. `auth.users` pertenece a un esquema separado. Las claves `profiles.id`, `customers.id` y `account_details.id` referencian esa identidad. La ficha privada se lee con la cuenta titular. `customer_guest_links` vincula al cliente con un huésped del mismo hotel y se gestiona por RPC. `sandbox_payments.reservation_id` es único y su `customer_id` puede quedar nulo si se elimina el cliente.
 
 | Regla | Implementación |
 | --- | --- |
@@ -192,6 +227,7 @@ flowchart TB
   subgraph Browser[Navegador]
     UI[index.html y styles.css]
     JS[app.js, hotel-ui.js y voice-assistant.js]
+    PayUI[pagos.html y pagos.js]
     Speech[Web Speech API]
     UI <-->|Formularios y mensajes| JS
     JS <-->|Texto y audio| Speech
@@ -201,6 +237,7 @@ flowchart TB
     API[Data API y RPC]
     DB[PostgreSQL con RLS]
     Edge[Edge Function process-voice]
+    Checkout[Edge Function sandbox-checkout]
     Auth -->|Emite el JWT de sesión| JS
     API -->|Operaciones con identidad de sesión| DB
     DB --> Rules[Claves compuestas y exclusión GiST]
@@ -210,25 +247,31 @@ flowchart TB
   JS <-->|Consultas, cambios y RPC con JWT| API
   JS -->|Instrucción autorizada y JWT| Edge
   Edge -->|Secreto del servidor| AI[API de Gemini]
+  Pages -->|Sirve la página de pagos| PayUI
+  PayUI -->|Sesión y reserva propia cerrada| Checkout
+  Checkout -->|Valida la sesión| Auth
+  Checkout -->|Consulta total y registra estado| DB
+  Checkout -->|Compra de prueba en PEN| Stripe[Stripe Checkout test]
+  Checkout -->|Compra de prueba en USD| PayPal[PayPal Sandbox]
 ```
 
-GitHub Pages entrega los archivos. El navegador usa Supabase Auth para inicio de sesión con correo y contraseña, con Google como opción si el proveedor está habilitado. `supabase-js` comunica la identidad de sesión a la Data API, y el frontend consulta el perfil para mostrar el panel correspondiente. La base de datos aplica la autorización. Las políticas del repositorio obtienen el hotel desde el perfil del usuario autenticado, permiten al personal operar dentro de su hotel y limitan los cambios de catálogo al administrador. El exporte incluye 17 políticas y registra sus nombres, operaciones y roles. Las expresiones de filtro se describen según las migraciones.
+GitHub Pages entrega los archivos. El navegador usa Supabase Auth para inicio de sesión con correo y contraseña, con Google como opción si el proveedor está habilitado. `supabase-js` comunica la identidad de sesión a la Data API, y el frontend consulta el perfil para mostrar el panel correspondiente. La base de datos aplica la autorización. Las políticas del repositorio obtienen el hotel desde el perfil del usuario autenticado, permiten al personal operar dentro de su hotel y limitan los cambios de catálogo al administrador. Las migraciones también restringen la ficha privada y los pagos al titular, y reservan la gestión del vínculo cliente-huésped a las funciones del servidor.
 
-La voz usa `SpeechRecognition` o `webkitSpeechRecognition` para reconocer el dictado y `SpeechSynthesisUtterance` para leer instrucciones y datos. El reconocimiento depende del navegador, de su servicio de voz y del permiso de micrófono. HTML mantiene etiquetas y botones nativos, y `app.js` publica estados y errores mediante `aria-live`. PostgreSQL conserva los importes cuando crea una reserva o un consumo y calcula la liquidación con la vista. El JavaScript consulta esa vista y presenta los importes en soles.
+La voz usa `SpeechRecognition` o `webkitSpeechRecognition` para reconocer el dictado y `SpeechSynthesisUtterance` para leer instrucciones y datos. El reconocimiento depende del navegador, de su servicio de voz y del permiso de micrófono. HTML mantiene etiquetas y botones nativos, y `app.js` publica estados y errores mediante `aria-live`. PostgreSQL conserva los importes cuando crea una reserva o un consumo y calcula la liquidación con la vista. El JavaScript consulta esa vista y presenta los importes en soles. Gemini es opcional y clasifica instrucciones de revisión. Para pagos de prueba, `sandbox-checkout` comprueba la identidad y el total de la estadía cerrada. Stripe usa PEN y PayPal Sandbox usa USD con una cotización de referencia. Las credenciales de los proveedores se configuran en Supabase.
 
 ## 5. Guía de sustentación individual
 
 ### Preparación
 
-1. Entra a [HotelERP](https://amadorjara-alt.github.io/HotelERP/) con una cuenta confirmada. En el alta de un perfil nuevo elige **Administrador · Crear un hotel** e indica **Hotel Demo ERP**. Si ese hotel ya existe y tienes su cuenta administradora, usa esa cuenta.
-2. En el SQL Editor del proyecto `ynnulzfgsfkojvgbhgua`, ejecuta [HotelERP_seed.sql](HotelERP_seed.sql). Si usarás un hotel de prueba con otro nombre, configura `hotel_objetivo` con su UUID. Si el nombre coincide con varios hoteles de administradores, el script se detiene y pide un UUID. Regresa a la aplicación y pulsa **Actualizar** en el calendario.
+1. Entra a [HotelERP](https://amadorjara-alt.github.io/HotelERP/) con una cuenta confirmada. Usa la cuenta administradora de **Rodolfo**. Si preparas otro entorno de ensayo, puedes crear **Hotel Demo ERP** desde el alta de personal.
+2. En el SQL Editor del proyecto `ynnulzfgsfkojvgbhgua`, ejecuta [HotelERP_seed.sql](HotelERP_seed.sql). El script prioriza **Rodolfo**, acepta **Hotel Demo ERP** como alternativa y habilita el catálogo público del hotel seleccionado. Si el nombre es ambiguo o deseas otro hotel, usa su UUID en `hotel_objetivo`. Regresa a la aplicación y pulsa **Actualizar** en el calendario.
 3. Antes de presentar, ensaya con el mismo navegador y micrófono. Comprueba que puedas recorrer el formulario con Tab y Shift+Tab, activar botones con Enter o Espacio y guardar sin hablar. Con un lector de pantalla, escucha las etiquetas y los anuncios de estado. Si el micrófono falla durante la exposición, muestra el camino por teclado y explica el flujo de voz con el diagrama.
 
 ### Caso exitoso · 3 minutos
 
 1. **Explica el problema.** «HotelERP organiza el trabajo de recepción y evita que dos huéspedes queden asignados a la misma habitación durante las mismas noches».
 2. **Muestra el calendario.** Señala una casilla «Libre» y una «Reservada» u «Ocupada». Tras el primer seed, la DEMO-101 contiene una estadía ocupada que incluye el día de la carga.
-3. **Registra un huésped.** Activa **Iniciar registro por voz**, dicta «Lucía Demo», un documento ficticio que no hayas usado y «lucia arroba ejemplo punto com». En el resumen di «corregir correo», dicta el reemplazo y espera que el sistema lea la versión corregida. Di «confirmar». El aviso esperado es «Huésped registrado. Ya puedes crear su reserva». El selector de huésped queda preseleccionado.
+3. **Registra un huésped.** Activa **Iniciar registro por voz**, dicta «Lucía Demo», un documento ficticio que no hayas usado y «lucia arroba ejemplo punto com». En el resumen di «corregir correo», espera a que el sistema pida el nuevo correo y dicta «lucia demo arroba gmail». Comprueba que el resumen actualizado incluye `luciademo@gmail.com`. Di «guardar». El aviso esperado es «Huésped registrado. Ya puedes crear su reserva». El selector de huésped queda preseleccionado.
 4. **Crea una reserva de tres noches.** Selecciona **DEMO-105** y tres noches seguidas libres. En una carga nueva, puedes usar ingreso mañana y salida cuatro días desde hoy. Revisa el calendario si ya ensayaste con esas fechas. Pulsa **Guardar reserva**. Comprueba que el calendario cambie a «Reservada» y que la liquidación muestre la reserva recién guardada.
 5. **Liquida la estadía.** Pulsa **Marcar ingreso**. Registra dos unidades de **Demo Desayuno** y una de **Demo Lavandería**. Con las tarifas originales del seed, el resultado es **3 × S/ 390 = S/ 1 170** de alojamiento y **2 × S/ 35 + S/ 25 = S/ 95** de servicios. El total es **S/ 1 265**. Después de demostrar el conflicto, pulsa **Cerrar estadía** para ver el cambio a «Finalizada».
 
@@ -237,6 +280,13 @@ La voz usa `SpeechRecognition` o `webkitSpeechRecognition` para reconocer el dic
 1. Con la reserva anterior todavía vigente, abre **Nueva reserva**. Elige otro huésped del seed, la misma habitación y un ingreso un día después del ingreso original. Usa la misma salida. Completa todo desde el formulario de reservas.
 2. Pulsa **Guardar reserva**. El aviso esperado es **«La habitación ya está reservada en parte de ese período. Elige otras fechas.»** La nueva reserva queda sin guardar y la original sigue en el calendario.
 3. Explica que la exclusión se aplica en PostgreSQL durante la escritura. Las fechas usan un intervalo semiabierto. El día de salida puede ser el ingreso de otra reserva si el resto de sus noches está libre. En dos envíos simultáneos incompatibles, PostgreSQL impide que ambos se confirmen.
+
+### Portal del cliente · 2 minutos
+
+1. Abre **Soy cliente** en otra sesión. Usa una cuenta de cliente confirmada y un documento ficticio distinto de los que ya registraste en recepción.
+2. Consulta fechas, selecciona una habitación publicada de **Rodolfo** o **Hotel Demo ERP** y confirma la reserva. Puedes dictar y corregir el correo antes de enviarla. Ve a **Mis reservas**.
+3. Regresa a recepción y pulsa **Actualizar**. Comprueba que el número de habitación y las fechas coinciden con las del portal.
+4. Si vas a mostrar pagos de prueba, registra los consumos y cierra esa estadía desde recepción. En el portal, abre **Consultar pago de prueba**. Para mostrar Stripe o PayPal se necesita el entorno de prueba correspondiente configurado en Supabase.
 
 ### Preguntas técnicas del docente
 
@@ -249,11 +299,14 @@ La voz usa `SpeechRecognition` o `webkitSpeechRecognition` para reconocer el dic
 | ¿Qué diferencia hay entre cliente y huésped? | `customers` guarda el perfil de una cuenta autenticada. `guests` contiene los datos operativos que registra recepción. `reservations` referencia a `guests`. |
 | ¿Dónde se procesa la voz? | `listen()` y `speak()` invocan la Web Speech API. `readback()` genera el resumen. `review()` interpreta la confirmación o el campo a corregir. Al confirmar, el navegador envía los valores del formulario a Supabase. |
 | ¿Cómo se usa sin micrófono? | Los campos tienen etiquetas HTML y los controles son botones. El usuario puede editar los valores con teclado y enviar el mismo formulario. Los avisos se publican como estado o alerta según el tipo de mensaje. |
-| ¿Qué permite el modo cliente? | Muestra el nombre del registro en `customers` y el correo de la sesión. La administración y la operación del hotel aparecen en el panel del personal. |
+| ¿Qué permite el modo cliente? | Permite filtrar el catálogo publicado, reservar, consultar el perfil y ver las estadías y liquidaciones propias. El vínculo cliente-huésped limita qué reservas aparecen en el portal. |
 
 ### Código de referencia
 
-- [Frontend y Web Speech API](app.js)
+- [Frontend de recepción](app.js)
+- [Dictado, corrección y alertas](voice-assistant.js)
+- [Catálogo, portal y reservas vinculadas](hotel-ui.js)
+- [Pago de prueba](supabase/functions/sandbox-checkout/index.js)
 - [Formulario y estructura semántica](index.html)
 - [Tablas, exclusión y liquidación](supabase/migrations/202611200001_hotel_erp_initial_schema.sql)
 - [Hoteles, permisos y registro de usuarios](supabase/migrations/202611200002_hotel_tenants_and_customer_registration.sql)

@@ -70,9 +70,9 @@ function listen(prompt, onResult, version) {
     };
     try {
       speech.start();
-    } catch (error) {
+    } catch {
       recognizer = null;
-      message(explain(error), true);
+      message("No se pudo iniciar el micrófono. Revisa el permiso, vuelve a intentarlo o escribe los datos.", true);
     }
   });
 }

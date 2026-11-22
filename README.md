@@ -19,12 +19,12 @@ Está dirigido a hoteles pequeños y a sus equipos de recepción en Perú. Los a
 | --- | --- |
 | Calendario | Ver siete noches por habitación, navegar entre semanas y seleccionar una fecha libre o una reserva. |
 | Reservas | Crear reservas y gestionar ingreso, cancelación y cierre. PostgreSQL rechaza los cruces para la misma habitación. |
-| Huéspedes | Capturar nombre y documento mediante teclado o dictado en español. La lectura en voz alta permite revisar, corregir y confirmar antes de guardar. |
+| Huéspedes | Capturar nombre, documento y correo opcional con teclado o dictado en español. El sistema lee los tres campos y permite corregir cada uno antes de guardar. |
 | Estancias y servicios | Registrar consumos y calcular alojamiento, servicios y total con las tarifas guardadas. |
 | Administración | Crear un hotel, agregar habitaciones y servicios y generar invitaciones para el personal. |
 | Portal de clientes | Explorar el catálogo, reservar con una cuenta de cliente y consultar sus propias estadías. |
 
-La liquidación y los consumos se gestionan en recepción. El cliente puede consultar los importes de sus propias estadías.
+La liquidación y los consumos se gestionan en recepción. **Disponibles hoy** usa la misma regla que el calendario: el ingreso cuenta, la salida queda fuera y una reserva finalizada sigue bloqueando las fechas que abarca. El cliente puede consultar los importes de sus propias estadías.
 
 ## Inicio de sesión y registro
 
@@ -32,7 +32,7 @@ La liquidación y los consumos se gestionan en recepción. El cliente puede cons
 
 1. Desde la portada, pulsa **Comenzar** y elige **Soy cliente** o **Soy personal del hotel**.
 2. Para una cuenta nueva, elige **Crear cuenta**, ingresa correo y contraseña y confirma el correo cuando Supabase lo solicite. El botón de Google usa OAuth y requiere activar el proveedor en Supabase.
-3. Completa el perfil. **Administrador** crea un hotel. **Personal** ingresa el código de un administrador. **Cliente** guarda su nombre y accede a su portal.
+3. Completa la ficha privada con nombre, edad, sexo y DNI. **Administrador** crea un hotel. **Personal** ingresa el código de un administrador. **Cliente** accede al catálogo y a sus propias reservas.
 4. Cada invitación permite unir una cuenta a un hotel. Se consume al usarla y caduca en 24 horas.
 
 El perfil almacenado determina el acceso. La opción elegida en la pantalla solo ayuda a escoger el tipo de registro. Cada cuenta tiene un perfil y cada miembro del personal pertenece a un hotel. Las referencias de la base de datos también impiden asociar habitaciones, huéspedes y servicios de otro hotel.
@@ -43,7 +43,7 @@ El perfil almacenado determina el acceso. La opción elegida en la pantalla solo
 | --- | --- |
 | [`index.html`](index.html) | Estructura semántica del acceso, registro, portal de clientes y panel de recepción. |
 | [`styles.css`](styles.css) | Estilos adaptables, iconos, formularios, foco visible y colores con etiquetas para el calendario. |
-| [`app.js`](app.js) | Autenticación, control de vistas y formularios, calendario, reservas, consumos, liquidación y Web Speech API. |
+| [`app.js`](app.js) | Autenticación, control de vistas y formularios, calendario, reservas, consumos y liquidación. |
 | [Migración inicial](supabase/migrations/202611200001_hotel_erp_initial_schema.sql) | Tablas operativas, RLS, restricción de exclusión de fechas, tarifas históricas y vista de liquidación. |
 | [Migración de hoteles y clientes](supabase/migrations/202611200002_hotel_tenants_and_customer_registration.sql) | Hoteles, perfiles de clientes, invitaciones y aislamiento de datos por hotel. |
 
@@ -60,21 +60,24 @@ Para desarrollo, sirve la raíz del repositorio con un servidor HTTP local. Apli
 
 ## Guion de demostración
 
-1. Entra como administrador, agrega la habitación 204 a S/ 150 por noche y registra lavandería a S/ 30 y desayuno a S/ 40.
-2. Registra a un huésped ficticio mediante voz, corrige un dato después de escucharlo y confirma.
-3. Reserva tres noches. Intenta crear otra reserva que se cruce para ver el error. Una reserva contigua puede comenzar el día de la salida.
-4. Agrega los dos consumos a la reserva original. La liquidación debe mostrar **S/ 450 + S/ 70 = S/ 520**.
-5. Crea un cliente e inicia sesión para comprobar que su portal muestra su propio perfil.
+1. Usa la cuenta administradora de **Rodolfo** o **Hotel Demo ERP** y carga [HotelERP_seed.sql](HotelERP_seed.sql) en el SQL Editor después de aplicar las migraciones. El catálogo del hotel de prueba queda publicado.
+2. En **Registrar huésped**, dicta nombre, documento y correo. Al oír el resumen, di «corregir correo», dicta el reemplazo, comprueba el nuevo resumen y di «guardar».
+3. Reserva tres noches libres en **DEMO-105**. Intenta otra reserva que se cruce y comprueba el mensaje. Una reserva contigua puede empezar el día de la salida.
+4. Registra dos **Demo Desayuno** y una **Demo Lavandería**. Con las tarifas del seed, la liquidación esperada es **S/ 1 170 + S/ 95 = S/ 1 265**.
+5. Desde otra sesión, reserva como cliente con un documento ficticio nuevo y abre **Mis reservas**. Actualiza el calendario de recepción y verifica que aparezca la misma reserva.
+
+La [guía de sustentación](HotelERP_Diagramas_y_Sustentacion.md) incluye los cuatro diagramas y los pasos detallados de la demostración.
 
 ## Portales y reservas por Internet
 
-La URL raíz abre la presentación pública. **Comenzar** lleva a la selección de cliente o personal. El modo cliente permite explorar el catálogo, consultar fechas y reservar con una cuenta de cliente. En **Configuración**, un administrador puede publicar el catálogo de su hotel. El hotel de demostración aparece publicado desde la migración. Las fotografías son ilustrativas y los precios se leen de Supabase.
+La URL raíz abre la presentación pública. **Comenzar** lleva a la selección de cliente o personal. El modo cliente permite explorar el catálogo, consultar fechas y reservar con una cuenta de cliente. En **Configuración**, un administrador puede publicar el catálogo de su hotel. El seed publica el hotel de ensayo seleccionado. El portal envía la reserva a `hotel_customer_book`, que crea o reutiliza el vínculo en `customer_guest_links` y registra la reserva que también se ve en recepción. Las fotografías son ilustrativas y los precios se leen de Supabase.
 
 | Archivo nuevo | Responsabilidad |
 | --- | --- |
 | [hotel-ui.js](hotel-ui.js) | Tarjetas públicas, disponibilidad por fechas, portal de clientes, indicadores y tablas de recepción. |
-| [voice-assistant.js](voice-assistant.js) | STT y TTS en español, corrección de campos y confirmación. Comparte el flujo en recepción y en el portal. |
+| [voice-assistant.js](voice-assistant.js) | Reconocimiento y lectura en español, normalización del documento y correo, y corrección de los tres campos antes de confirmar. Comparte el flujo en recepción y en el portal. |
 | [process-voice](supabase/functions/process-voice/index.js) | Interpreta comandos opcionales con Gemini. Verifica la sesión y el perfil antes de invocar al proveedor. |
+| [sandbox-checkout](supabase/functions/sandbox-checkout/index.js) | Verifica la titularidad y el total de la estadía cerrada para Stripe y PayPal de prueba. |
 | [Guía de diagramas y sustentación](HotelERP_Diagramas_y_Sustentacion.md) | Diagramas Mermaid, lógica empresarial y preguntas técnicas. |
 | [Datos de muestra](HotelERP_seed.sql) | Registros ficticios para una demostración controlada. |
 
