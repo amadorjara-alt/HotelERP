@@ -92,14 +92,19 @@ export function createPublicPortal({db,byId,check,bind,message,currency,names,to
       const code=photos[index%photos.length];
       photo.src="https://images.pexels.com/photos/"+code+"/pexels-photo-"+code+".jpeg?auto=compress&cs=tinysrgb&w=700";
       const body=make("div");body.className="room-card-body";
-      body.append(make("h3",room.name+" · "+room.number),make("p",room.hotel),
-        make("p",room.capacity+" "+(room.capacity===1?"persona":"personas")+" · "+currency.format(room.nightly_rate)+" por noche"));
+      const meta=make("p");meta.className="impact-room-meta";
+      const capacity=make("span",room.capacity+" "+(room.capacity===1?"persona":"personas"));
+      capacity.className="impact-capacity";
+      const price=make("strong",currency.format(room.nightly_rate)+" por noche");
+      price.className="impact-price";
+      meta.append(capacity,price);
+      body.append(make("h3",room.name+" · "+room.number),make("p",room.hotel),meta);
       const controls=make("div");controls.className="controls";
       const button=make("button","Ver detalles");button.type="button";button.className="secondary";button.onclick=()=>details(room);
       controls.append(button);
       if(dates){
         if(room.available){
-          const reserve=make("button","Reservar");reserve.type="button";reserve.onclick=()=>begin(room,dates);
+          const reserve=make("button","Reservar");reserve.className="impact-reserve";reserve.type="button";reserve.onclick=()=>begin(room,dates);
           controls.append(reserve);
         }else controls.append(make("span","No disponible"));
       }

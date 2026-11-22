@@ -486,3 +486,157 @@ main>.panel:first-of-type{margin-top:24px}
     }
   }
 }
+
+/* HotelERP: impacto visual */
+@media screen {
+  :root {
+    --accent-gold: #d97706;
+    --accent-emerald: #10b981;
+    --impact-gold-ink: #794200;
+    --impact-emerald-ink: #075846;
+    --impact-gold-wash: rgb(245 158 11 / 14%);
+    --impact-emerald-wash: rgb(16 185 129 / 12%);
+    --impact-warm-band: #fcf5e8;
+    --impact-cool-band: #eff8f4;
+    --impact-cta: #ffcf6b;
+    --impact-cta-hover: #f5b849;
+    --impact-cta-ink: #2a1c09;
+  }
+  :root[data-hotelerp-theme="dark"] {
+    --accent-gold: #f59e0b;
+    --impact-gold-ink: #ffd783;
+    --impact-emerald-ink: #9ef2cf;
+    --impact-gold-wash: rgb(245 158 11 / 18%);
+    --impact-emerald-wash: rgb(16 185 129 / 18%);
+    --impact-warm-band: #2b241d;
+    --impact-cool-band: #182b29;
+  }
+
+  #landing :is(#habitaciones, #nosotros, #servicios-publicos) {
+    padding: clamp(1rem, 3vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  #landing #habitaciones { background: var(--impact-warm-band); }
+  #landing #nosotros { background: var(--impact-cool-band); }
+  #landing #servicios-publicos { background: var(--surface); }
+
+  #landing .access-banner,
+  :root[data-hotelerp-theme="dark"] #landing .access-banner {
+    padding: clamp(1rem, 3vw, 2rem);
+    border-color: var(--line);
+    background: linear-gradient(112deg, var(--impact-gold-wash), var(--impact-emerald-wash)),
+      var(--surface);
+  }
+  #landing .access-banner .impact-badge { margin-bottom: 0.55rem; }
+  #landing .access-banner p { margin-bottom: 0; }
+
+  .impact-card {
+    --impact-card-ink: var(--impact-emerald-ink);
+    --impact-card-wash: var(--impact-emerald-wash);
+    --impact-card-edge: var(--accent-emerald);
+  }
+  :is(.impact-card, .impact-badge).impact-gold {
+    --impact-card-ink: var(--impact-gold-ink);
+    --impact-card-wash: var(--impact-gold-wash);
+    --impact-card-edge: var(--accent-gold);
+  }
+  #servicios-publicos .service-grid > .impact-card,
+  .api-grid > .impact-card {
+    border-top: 3px solid var(--impact-card-edge);
+  }
+  .impact-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-bottom: 0.75rem;
+  }
+  .impact-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--impact-card-wash);
+    color: var(--impact-card-ink);
+  }
+  .impact-icon svg, .service-grid .impact-icon svg {
+    width: 22px;
+    height: 22px;
+    color: inherit;
+    margin: 0;
+  }
+  .impact-badge, .impact-capacity {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.23rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 750;
+  }
+  .impact-badge {
+    background: var(--impact-card-wash);
+    color: var(--impact-card-ink);
+  }
+
+  .impact-links { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .api-card .impact-link,
+  :root[data-hotelerp-theme="dark"] .api-card .impact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 36px;
+    padding: 0.32rem 0.6rem;
+    border: 1px solid var(--field);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--impact-emerald-ink);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-decoration: none;
+  }
+  .api-card .impact-link:hover,
+  :root[data-hotelerp-theme="dark"] .api-card .impact-link:hover {
+    background: var(--impact-emerald-wash);
+    text-decoration: underline;
+  }
+
+  :is(#landing, #customerArea) .room-cards article {
+    border-top: 3px solid var(--accent-gold);
+  }
+  .room-card-body .impact-room-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
+  }
+  .impact-capacity {
+    background: var(--impact-emerald-wash);
+    color: var(--impact-emerald-ink);
+  }
+  .impact-price {
+    color: var(--impact-gold-ink);
+    font-size: 1rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  #calendar button:not(.reserved, .occupied, .completed, .cancelled),
+  :root[data-hotelerp-theme="dark"] #calendar button:not(.reserved, .occupied, .completed, .cancelled) {
+    color: var(--impact-emerald-ink);
+    background: var(--impact-emerald-wash);
+    border-color: var(--accent-emerald);
+  }
+  #agenda .legend li:first-child i { background: var(--accent-emerald); }
+  :is(#landing, #customerArea) :is(.cta, .impact-reserve) {
+    color: var(--impact-cta-ink);
+    background: var(--impact-cta);
+    border: 1px solid var(--accent-gold);
+  }
+  :is(#landing, #customerArea) :is(.cta, .impact-reserve):hover {
+    color: var(--impact-cta-ink);
+    background: var(--impact-cta-hover);
+  }
+}

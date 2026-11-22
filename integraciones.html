@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ayuda e integraciones · HotelERP</title><link rel="stylesheet" href="./styles.css?v=ui-theme-1"><script src="./integraciones.js?v=2" defer></script><script src="./tema.js?v=1"></script></head><body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Información"><a href="./">Inicio</a><a href="./privacidad.html">Privacidad</a><a href="./integraciones.html">Ayuda</a><a href="./?acceso=seleccionar">Iniciar sesión</a><button type="button" class="secondary theme-toggle" data-theme-toggle aria-label="Tema oscuro" aria-pressed="false" hidden>Tema oscuro</button></nav></header><main>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ayuda e integraciones · HotelERP</title><link rel="stylesheet" href="./styles.css?v=visual-impacto-1"><script src="./integraciones.js?v=2" defer></script><script src="./tema.js?v=1"></script></head><body><header><a class="brand" href="./">HotelERP</a><nav aria-label="Información"><a href="./">Inicio</a><a href="./privacidad.html">Privacidad</a><a href="./integraciones.html">Ayuda</a><a href="./?acceso=seleccionar">Iniciar sesión</a><button type="button" class="secondary theme-toggle" data-theme-toggle aria-label="Tema oscuro" aria-pressed="false" hidden>Tema oscuro</button></nav></header><main>
 <section class="panel"><p class="overline">Información para tu estadía</p><h1>Ayuda e integraciones</h1>
 <details><summary>¿Cómo reservo una habitación?</summary><p>Entra al portal de clientes, elige las fechas, consulta disponibilidad y selecciona una habitación. Necesitas completar tu perfil para confirmar.</p><p><a href="./?acceso=cliente">Abrir el portal</a></p></details>
 <details><summary>¿Cómo funciona el registro por voz?</summary><p>El botón del micrófono inicia un asistente que escucha, rellena y lee los campos. Puedes decir «corregir nombre», «corregir documento» o «corregir correo». Los datos se guardan cuando confirmas.</p></details>
@@ -8,34 +8,28 @@
 <section class="panel" aria-labelledby="apiResumenTitulo">
   <h2 id="apiResumenTitulo">Integraciones de HotelERP</h2>
   <div class="api-grid">
-    <article class="api-card">
-      <h3>Supabase PostgreSQL + RLS</h3>
-      <p>Guarda habitaciones, reservas y liquidaciones. Supabase Auth identifica
-      la cuenta y RLS limita qué filas puede leer o cambiar cada usuario.</p>
+    <article class="api-card impact-card impact-emerald">
+      <div class="impact-card-head"><span class="impact-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/></svg></span><span class="impact-badge">En vivo</span></div>
+      <h3>Supabase PostgreSQL + RLS</h3><p>Reservas con acceso por rol.</p>
     </article>
-    <article class="api-card">
-      <h3>Web Speech API + Google Gemini</h3>
-      <p>El navegador escucha y lee el nombre, el documento y el correo.
-      Puedes corregirlos antes de confirmar. Gemini interpreta instrucciones
-      de forma opcional, cuando está configurado y lo autorizas.</p>
+    <article class="api-card impact-card impact-gold">
+      <div class="impact-card-head"><span class="impact-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M6 10v2a6 6 0 0 0 12 0v-2m-6 8v4m-3 0h6"/></svg></span><span class="impact-badge">IA + Voz</span></div>
+      <h3>Web Speech API + Google Gemini</h3><p>Dictado y lectura. Gemini es opcional.</p>
     </article>
-    <article class="api-card">
-      <h3>Open-Meteo Clima</h3>
-      <p>Muestra máximas, mínimas y probabilidad de lluvia en Lima.</p>
-      <a href="#travelWeather">Consultar pronóstico</a>
+    <article class="api-card impact-card impact-emerald">
+      <div class="impact-card-head"><span class="impact-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16h12a4 4 0 0 0 0-8 6 6 0 0 0-11 2 3 3 0 0 0-1 6zm3 2-1 3m5-3-1 3m5-3-1 3"/></svg></span><span class="impact-badge">Tiempo real</span></div>
+      <h3>Open-Meteo Clima</h3><p>Temperatura y lluvia en Lima.</p>
+      <div class="impact-links"><a class="impact-link" href="#travelWeather">Consultar pronóstico <span aria-hidden="true">→</span></a></div>
     </article>
-    <article class="api-card">
-      <h3>API Tipo de Cambio y Feriados</h3>
-      <p>Frankfurter consulta tasas de referencia entre soles, dólares y euros.
-      Nager.Date muestra los feriados nacionales de Perú.</p>
-      <a href="#exchangeTitle">Abrir conversor</a> ·
-      <a href="#travelHolidays">Ver feriados</a>
+    <article class="api-card impact-card impact-gold">
+      <div class="impact-card-head"><span class="impact-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16m-4-4 4 4-4 4m4 4H4m4-4-4 4 4 4"/></svg></span><span class="impact-badge">Viaje</span></div>
+      <h3>API Tipo de Cambio y Feriados</h3><p>Cambio referencial y feriados peruanos.</p>
+      <div class="impact-links"><a class="impact-link" href="#exchangeTitle">Abrir conversor <span aria-hidden="true">→</span></a><a class="impact-link" href="#travelHolidays">Ver feriados <span aria-hidden="true">→</span></a></div>
     </article>
-    <article class="api-card">
-      <h3>Pasarelas Sandbox Stripe/PayPal</h3>
-      <p>Permiten simular pagos de estadías cerradas. Stripe usa soles y
-      PayPal Sandbox usa dólares. Cada proveedor requiere configuración de prueba.</p>
-      <a href="./pagos.html">Abrir pagos de prueba</a>
+    <article class="api-card impact-card impact-gold">
+      <div class="impact-card-head"><span class="impact-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg></span><span class="impact-badge">Sandbox</span></div>
+      <h3>Pasarelas Sandbox Stripe/PayPal</h3><p>Pagos de prueba con Stripe y PayPal.</p>
+      <div class="impact-links"><a class="impact-link" href="./pagos.html">Abrir pagos de prueba <span aria-hidden="true">→</span></a></div>
     </article>
   </div>
 </section>
