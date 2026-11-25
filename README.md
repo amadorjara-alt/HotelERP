@@ -5,7 +5,7 @@ HotelERP es una aplicación académica para la operación diaria de recepción d
 - **Aplicación web:** [Abrir HotelERP](https://amadorjara-alt.github.io/HotelERP/)
 - **Repositorio:** [Código en GitHub](https://github.com/amadorjara-alt/HotelERP)
 - **Documento técnico:** [Google Docs](https://docs.google.com/document/d/1-vH_95P3sX0SCpoaMc2h4i511bz1YJVyL-2edw-fce0/edit)
-- **Presentación:** [Google Slides](https://docs.google.com/presentation/d/1BW6JLi7ELmSbfEwjXilAoTM2G3T0m40gV7CIah1fnHI/edit)
+- **Presentación:** [Google Slides](https://canva.link/u6ceiwtc5pacz9q)
 
 ## Qué es un ERP y a quién le sirve
 
